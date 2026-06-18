@@ -683,22 +683,22 @@ if(stage){
   const tailTrough=new THREE.Mesh(new THREE.BoxGeometry(5.7,0.14,0.4),matD); tailTrough.position.set(0,1.28,-1.68); tailTrough.castShadow=true; scene.add(tailTrough);
   // ---- particles (soft round, small, like droplets) ----
   const psc=document.createElement('canvas'); psc.width=psc.height=64; const pcx=psc.getContext('2d');
-  const grd=pcx.createRadialGradient(32,32,0,32,32,32); grd.addColorStop(0,'rgba(255,255,255,1)'); grd.addColorStop(0.45,'rgba(255,255,255,0.8)'); grd.addColorStop(1,'rgba(255,255,255,0)');
+  const grd=pcx.createRadialGradient(32,32,0,32,32,32); grd.addColorStop(0,'rgba(255,255,255,1)'); grd.addColorStop(0.55,'rgba(255,255,255,0.96)'); grd.addColorStop(1,'rgba(255,255,255,0)');
   pcx.fillStyle=grd; pcx.fillRect(0,0,64,64); const sprite=new THREE.CanvasTexture(psc);
-  const N=520, pGeo=new THREE.BufferGeometry();
+  const N=720, pGeo=new THREE.BufferGeometry();
   const pos=new Float32Array(N*3), col=new Float32Array(N*3), data=[];
-  const GOLD=new THREE.Color(0xFC8F33), TAIL=new THREE.Color(0xc4c4c9);
-  function spawn(i){ data[i]={gold:Math.random()<0.4, x:-2.35+Math.random()*0.5, z:0.35+Math.random()*0.75}; }
+  const GOLD=new THREE.Color(0xFFAB3D), TAIL=new THREE.Color(0xe6e6ec);
+  function spawn(i){ data[i]={gold:Math.random()<0.46, x:-2.35+Math.random()*0.5, z:0.35+Math.random()*0.75}; }
   function setCol(i){ const c=data[i].gold?GOLD:TAIL; col[i*3]=c.r;col[i*3+1]=c.g;col[i*3+2]=c.b; }
   for(let i=0;i<N;i++){ spawn(i); setCol(i); }
   pGeo.setAttribute('position',new THREE.BufferAttribute(pos,3));
   pGeo.setAttribute('color',new THREE.BufferAttribute(col,3));
-  const points=new THREE.Points(pGeo,new THREE.PointsMaterial({size:0.05,map:sprite,vertexColors:true,transparent:true,opacity:0.95,alphaTest:0.04,depthWrite:false,sizeAttenuation:true})); deckShake.add(points);
-  const WN=300, wGeo=new THREE.BufferGeometry(), wpos=new Float32Array(WN*3), wdata=[];
+  const points=new THREE.Points(pGeo,new THREE.PointsMaterial({size:0.13,map:sprite,vertexColors:true,transparent:true,opacity:1,alphaTest:0.05,depthWrite:false,sizeAttenuation:true})); deckShake.add(points);
+  const WN=380, wGeo=new THREE.BufferGeometry(), wpos=new Float32Array(WN*3), wdata=[];
   function wspawn(i){ wdata[i]={x:-2.3+Math.random()*5.0, z:1.1+Math.random()*0.28}; }
   for(let i=0;i<WN;i++){ wspawn(i); }
   wGeo.setAttribute('position',new THREE.BufferAttribute(wpos,3));
-  const waterPts=new THREE.Points(wGeo,new THREE.PointsMaterial({size:0.038,map:sprite,color:0x9ad8f5,transparent:true,opacity:0.5,alphaTest:0.03,depthWrite:false,sizeAttenuation:true})); deckShake.add(waterPts);
+  const waterPts=new THREE.Points(wGeo,new THREE.PointsMaterial({size:0.06,map:sprite,color:0xaee2ff,transparent:true,opacity:0.62,alphaTest:0.03,depthWrite:false,sizeAttenuation:true})); deckShake.add(waterPts);
   function updateWater(dt){ for(let i=0;i<WN;i++){ const d=wdata[i];
       d.z-=dt*1.45; d.x+=dt*0.12+(Math.random()-0.5)*0.02;
       if(d.z<-1.32){ wspawn(i); }
@@ -708,7 +708,7 @@ if(stage){
       if(d.gold){ d.x+=dt*0.9; d.z-=dt*0.03; } else { d.x+=dt*0.5; d.z-=dt*0.8; }
       d.x+=(Math.random()-0.5)*0.01; d.z+=(Math.random()-0.5)*0.01;
       if(d.x>2.7||d.z<-1.4){ spawn(i); setCol(i); pGeo.attributes.color.needsUpdate=true; }
-      const o=i*3; pos[o]=d.x; pos[o+1]=0.16; pos[o+2]=d.z;
+      const o=i*3; pos[o]=d.x; pos[o+1]=0.19; pos[o+2]=d.z;
     } pGeo.attributes.position.needsUpdate=true; }
   const ground=new THREE.Mesh(new THREE.PlaneGeometry(80,80),new THREE.ShadowMaterial({opacity:0.28})); ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; scene.add(ground);
   const controls=new OrbitControls(camera,renderer.domElement);
