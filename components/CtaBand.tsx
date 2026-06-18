@@ -1,6 +1,6 @@
-import { MessageCircle, FileText } from "lucide-react";
+import { MessageCircle, Phone } from "lucide-react";
 import Reveal from "./Reveal";
-import { wa } from "@/lib/whatsapp";
+import { wa, WA_PHONE } from "@/lib/whatsapp";
 
 export default function CtaBand() {
   return (
@@ -15,18 +15,18 @@ export default function CtaBand() {
           enviamos una cotización a su medida.
         </p>
         <div className="hero-cta">
-          <a className="btn btn-wa" href={wa()} target="_blank" rel="noopener">
-            <MessageCircle />
-            Escribir por WhatsApp
-          </a>
           <a
-            className="btn btn-ghost"
+            className="btn btn-wa"
             href={wa("Hola, deseo solicitar una cotización de las mesas gravimétricas Meproind.")}
             target="_blank"
             rel="noopener"
           >
-            <FileText />
-            Solicitar cotización
+            <MessageCircle />
+            Cotizar por WhatsApp
+          </a>
+          <a className="btn btn-ghost" href={`tel:+${WA_PHONE}`}>
+            <Phone />
+            Llamar ahora
           </a>
         </div>
       </Reveal>
