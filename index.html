@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Meproind · Mesas gravimétricas de alta precisión — prototipo</title>
+<meta name="description" content="Mesas gravimétricas de alta precisión: hasta 91% de recuperación de oro, 0% mercurio, solo agua. Modelos XL-25 a XL-100. Fabricación en Arequipa, Perú." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Expanded:wght@700;800;900&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --o:#FC8F33; --o2:#F7931E; --od:#E07414; --osoft:#FBEAD6; --on-accent:#2A1602;
+  --canvas:#F4F2ED; --panel:#ECE9E2; --surf:#FFFFFF; --card2:#FAF9F6; --line:#E4E0D8;
+  --ink:#1A1A1A; --ink2:#5C5856; --ink3:#918B85; --ink4:#B8B2AC;
+  --dark:#15120E; --dark2:#1E1A15; --dark-line:rgba(255,255,255,0.10);
+  --success:#2BA24A; --wa:#25D366;
+  --fdisp:"Archivo Expanded","Archivo",-apple-system,sans-serif;
+  --fhead:"Archivo",-apple-system,sans-serif;
+  --ftext:"Helvetica Neue",Helvetica,Arial,sans-serif;
+  --r-sm:10px; --r-md:14px; --r-lg:20px; --r-xl:28px; --r-pill:999px;
+  --sh1:0 1px 2px rgba(28,25,20,.05);
+  --sh2:0 2px 6px rgba(28,25,20,.05),0 12px 32px rgba(28,25,20,.07);
+  --sh3:0 24px 60px rgba(28,25,20,.16);
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--ftext);color:var(--ink2);background:var(--canvas);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+h1,h2,h3,h4{font-family:var(--fhead);color:var(--ink);letter-spacing:-.015em;line-height:1.06;font-weight:800}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+.wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+.eyebrow{font-family:var(--fhead);font-weight:700;font-size:.8rem;letter-spacing:.18em;text-transform:uppercase;color:var(--o);display:inline-flex;align-items:center;gap:8px}
+.eyebrow::before{content:"";width:22px;height:2px;background:var(--o);display:inline-block}
+.section{padding:clamp(56px,8vw,108px) 0}
+.lead{font-size:1.15rem;color:var(--ink2);max-width:60ch}
+.dark .lead{color:rgba(255,255,255,.72)}
+.btn{font-family:var(--fhead);font-weight:700;font-size:.95rem;border-radius:var(--r-sm);padding:14px 24px;display:inline-flex;align-items:center;gap:9px;cursor:pointer;border:1.5px solid transparent;transition:all .2s var(--ease);white-space:nowrap}
+.btn svg{width:18px;height:18px}
+.btn-o{background:var(--o);color:var(--on-accent)}
+.btn-o:hover{background:var(--o2);transform:translateY(-2px);box-shadow:0 10px 24px rgba(252,143,51,.32)}
+.btn-ghost{background:transparent;border-color:rgba(255,255,255,.3);color:#fff}
+.btn-ghost:hover{border-color:#fff;background:rgba(255,255,255,.06)}
+.btn-ghost-ink{background:transparent;border-color:rgba(26,22,18,.18);color:var(--ink)}
+.btn-ghost-ink:hover{border-color:var(--ink);transform:translateY(-2px)}
+.btn-wa{background:var(--wa);color:#fff}
+.btn-wa:hover{filter:brightness(1.05);transform:translateY(-2px);box-shadow:0 10px 24px rgba(37,211,102,.3)}
+.btn-sm{padding:10px 16px;font-size:.85rem}
+header{position:fixed;top:0;left:0;right:0;z-index:50;transition:all .3s var(--ease);padding:18px 0}
+header.scrolled{background:rgba(21,18,14,.88);backdrop-filter:blur(12px);padding:11px 0;box-shadow:0 1px 0 var(--dark-line)}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:24px}
+.brand{display:flex;align-items:center;gap:9px}
+.brand .word{font-family:var(--fhead);color:#fff;font-weight:600;font-size:1.35rem;letter-spacing:-.01em}
+.nav-links{display:flex;align-items:center;gap:28px}
+.nav-links a{color:rgba(255,255,255,.8);font-family:var(--fhead);font-weight:500;font-size:.92rem;transition:color .2s}
+.nav-links a:hover{color:#fff}
+.nav-cta{display:flex;align-items:center;gap:12px}
+/* hero full-bleed */
+.hero{position:relative;color:#fff;background:linear-gradient(96deg,rgba(15,18,14,.96) 0%,rgba(15,18,14,.84) 40%,rgba(15,18,14,.42) 100%),url('/img/landing/m1.jpg');background-size:cover;background-position:center;padding:170px 0 100px}
+.hero h1{font-family:var(--fdisp);font-weight:900;color:#fff;font-size:clamp(2.6rem,5.6vw,4.8rem);line-height:.98;letter-spacing:-.025em}
+.hero h1 .accent{color:var(--o)}
+.hero p.lead{margin:22px 0 30px;color:rgba(255,255,255,.82)}
+.hero-cta{display:flex;gap:14px;flex-wrap:wrap}
+.hero-trust{margin-top:26px;display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.62);font-size:.84rem}
+.hero-trust svg{width:16px;height:16px;color:var(--o)}
+.statband{background:var(--dark2);border-top:1px solid var(--dark-line);color:#fff}
+.statband .wrap{display:grid;grid-template-columns:repeat(5,1fr);gap:18px;padding-top:38px;padding-bottom:38px}
+.stat{text-align:center}
+.stat .n{font-family:var(--fdisp);font-weight:900;font-size:clamp(2rem,3.4vw,3rem);line-height:1;letter-spacing:-.02em}
+.stat .n.o{color:var(--o)}
+.stat .l{font-size:.78rem;color:rgba(255,255,255,.55);margin-top:8px;letter-spacing:.04em}
+.trust{background:var(--canvas);border-bottom:1px solid var(--line)}
+.trust .wrap{padding:34px 24px;display:flex;align-items:center;justify-content:center;gap:clamp(20px,4vw,64px);flex-wrap:wrap}
+.trust .ti{display:flex;align-items:center;gap:10px;color:var(--ink2);font-size:.9rem;font-weight:500}
+.trust .ti svg{width:22px;height:22px;color:var(--o)}
+.shead{max-width:680px;margin-bottom:48px}
+.shead.center{margin-left:auto;margin-right:auto;text-align:center}
+.shead h2{font-size:clamp(1.9rem,3.4vw,2.7rem);margin:16px 0 14px}
+.shead h2 .o{color:var(--o)}
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.vcard{border-radius:var(--r-lg);padding:34px;position:relative}
+.vcard.win{background:var(--dark);color:#fff;box-shadow:var(--sh3)}
+.vcard.win::before{content:"";position:absolute;inset:0;border-radius:var(--r-lg);border:1.5px solid rgba(252,143,51,.45);pointer-events:none}
+.vcard.lose{background:var(--card2);border:1px solid var(--line)}
+.vcard .badge{position:absolute;top:-15px;left:34px;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.vcard .badge svg{width:20px;height:20px;color:#fff}
+.vcard.win .badge{background:var(--success)} .vcard.lose .badge{background:var(--ink4)}
+.vcard h3{font-size:1.5rem;margin-bottom:6px} .vcard.win h3{color:#fff} .vcard.lose h3{color:var(--ink3)}
+.vcard .uline{width:46px;height:3px;background:var(--o);border-radius:2px;margin-bottom:20px} .vcard.lose .uline{background:var(--ink4)}
+.vlist{list-style:none;display:flex;flex-direction:column;gap:13px}
+.vlist li{display:flex;gap:11px;align-items:flex-start;font-size:.98rem}
+.vlist li svg{width:19px;height:19px;flex:none;margin-top:2px}
+.vcard.win .vlist li{color:rgba(255,255,255,.82)} .vcard.win .vlist svg{color:var(--o)}
+.vcard.lose .vlist li{color:var(--ink3)} .vcard.lose .vlist svg{color:var(--ink4)}
+.claim{text-align:center;padding:clamp(40px,6vw,64px) 0}
+.claim .pre{font-family:var(--fhead);font-weight:700;font-size:1.1rem;color:var(--on-accent);letter-spacing:.02em}
+.claim .big{font-family:var(--fdisp);font-weight:900;color:var(--on-accent);font-size:clamp(3.5rem,10vw,7rem);line-height:.92;letter-spacing:-.03em;margin:2px 0}
+.claim .sub{font-family:var(--fhead);font-weight:700;color:var(--on-accent);font-size:clamp(1.05rem,2.3vw,1.55rem)}
+.models{background:var(--panel)}
+.mgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;align-items:start}
+.mcard{background:var(--surf);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;display:flex;flex-direction:column;transition:all .25s var(--ease);position:relative}
+.mcard:hover{transform:translateY(-6px);box-shadow:var(--sh2)}
+.mcard.pop{border:1.5px solid var(--o);box-shadow:var(--sh2)}
+.mcard .photo{width:100%;display:block;height:auto}
+.mcard .mbody{padding:14px;display:flex;flex-direction:column;gap:9px}
+.mcard .pop-badge{position:absolute;top:10px;right:10px;z-index:2;background:var(--o);color:var(--on-accent);font-family:var(--fhead);font-weight:700;font-size:.66rem;letter-spacing:.08em;padding:5px 12px;border-radius:var(--r-pill);white-space:nowrap}
+.gallery{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.gallery img{width:100%;height:200px;object-fit:cover;border-radius:var(--r-md);border:1px solid var(--line)}
+/* anatomy interactive */
+.anatomy{background:var(--dark);color:#fff}
+.anatomy .shead h2{color:#fff}
+.anat-wrap{display:grid;grid-template-columns:1.35fr .65fr;gap:28px;align-items:stretch}
+.anat-stage{position:relative;border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--dark-line);min-height:100%}
+.anat-stage>img{width:100%;height:100%;object-fit:cover;display:block}
+.hot{position:absolute;transform:translate(-50%,-50%);width:32px;height:32px;border-radius:50%;border:2px solid #fff;background:rgba(252,143,51,.92);cursor:pointer;display:flex;align-items:center;justify-content:center;animation:hp 2.4s infinite;padding:0;z-index:2}
+.hot::after{content:"";width:8px;height:8px;border-radius:50%;background:#fff}
+.hot:hover,.hot.active{background:#fff} .hot:hover::after,.hot.active::after{background:var(--od)}
+.hot.active{box-shadow:0 0 0 6px rgba(252,143,51,.32);animation:none}
+@keyframes hp{0%{box-shadow:0 0 0 0 rgba(252,143,51,.5)}70%{box-shadow:0 0 0 13px rgba(252,143,51,0)}100%{box-shadow:0 0 0 0 rgba(252,143,51,0)}}
+.anat-panel{background:var(--dark2);border:1px solid var(--dark-line);border-radius:var(--r-lg);padding:20px;display:flex;flex-direction:column;gap:14px}
+.anat-panel img{width:100%;height:160px;object-fit:cover;border-radius:var(--r-md)}
+.anat-panel .pt{font-family:var(--fhead);font-weight:800;color:#fff;font-size:1.18rem;line-height:1.2}
+.anat-panel .pd{color:rgba(255,255,255,.72);font-size:.92rem}
+.anat-hint{font-size:.78rem;color:rgba(255,255,255,.42);display:flex;align-items:center;gap:7px;margin-top:auto}
+.anat-hint svg{width:15px;height:15px;color:var(--o)}
+.viewer3d-stage{position:relative;width:100%;max-width:820px;margin:0 auto;aspect-ratio:16/10;border-radius:var(--r-lg);overflow:hidden;background:#13110d;cursor:grab;border:1px solid var(--dark-line)}
+.viewer3d-stage:active{cursor:grabbing}
+.viewer3d-stage canvas{display:block}
+.v3d-legend{position:absolute;top:12px;left:14px;z-index:2;display:flex;align-items:center;font-size:.76rem;color:rgba(255,255,255,.85);background:rgba(21,18,14,.5);backdrop-filter:blur(6px);padding:7px 13px;border-radius:var(--r-pill);pointer-events:none}
+.v3d-dot{width:9px;height:9px;border-radius:50%;background:var(--c);display:inline-block;margin-right:6px}
+.v3d-controls{position:absolute;bottom:12px;right:12px;z-index:2;display:flex;gap:8px}
+.v3d-controls button{font-family:var(--fhead);font-weight:600;font-size:.74rem;color:#fff;background:rgba(21,18,14,.6);border:1px solid rgba(255,255,255,.22);border-radius:var(--r-pill);padding:7px 13px;cursor:pointer;backdrop-filter:blur(6px);transition:all .2s var(--ease)}
+.v3d-controls button:hover{background:rgba(252,143,51,.9);color:#2A1602;border-color:transparent}
+.v3d-rot{position:absolute;inset:0;transform-style:preserve-3d;cursor:grab;touch-action:none;will-change:transform}
+.v3d-rot.grabbing{cursor:grabbing}
+.v3d-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--dark-line);box-shadow:var(--sh3)}
+.v3d-face img{width:100%;height:100%;object-fit:cover;display:block}
+.v3d-face.back{transform:rotateY(180deg)}
+.v3d-hint{text-align:center;margin-top:20px;color:rgba(255,255,255,.5);font-size:.85rem;display:flex;align-items:center;justify-content:center;gap:9px}
+.v3d-hint svg{width:16px;height:16px;color:var(--o)}
+.ctable{width:100%;border-collapse:collapse;background:var(--surf);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh1);border:1px solid var(--line)}
+.ctable th,.ctable td{padding:16px 18px;text-align:left;font-size:.92rem;vertical-align:top;border-bottom:1px solid var(--line)}
+.ctable thead th{background:var(--ink);color:#fff;font-family:var(--fhead);font-weight:700;font-size:.82rem;letter-spacing:.04em;text-transform:uppercase}
+.ctable thead th.hl{background:var(--o);color:var(--on-accent)}
+.ctable td.feat{font-family:var(--fhead);font-weight:700;color:var(--ink);width:22%}
+.ctable td.mep{color:var(--ink2);background:var(--osoft);width:39%;border-left:1px solid rgba(252,143,51,.25);border-right:1px solid rgba(252,143,51,.25)}
+.ctable td.mep b{color:var(--od)}
+.ctable td.oth{color:var(--ink3);width:39%}
+.ctable tr:last-child td{border-bottom:0}
+.gold{background:var(--canvas)}
+.gold-wrap{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+.gold-visual img{width:100%;border-radius:var(--r-lg);box-shadow:var(--sh2);border:1px solid var(--line)}
+.gtag{display:inline-flex;align-items:center;gap:8px;background:var(--osoft);color:var(--od);font-family:var(--fhead);font-weight:700;font-size:.78rem;letter-spacing:.06em;padding:7px 14px;border-radius:var(--r-pill);margin-bottom:18px}
+.gold h2{font-size:clamp(1.8rem,3vw,2.5rem);margin-bottom:16px}
+.gold-points{list-style:none;display:flex;flex-direction:column;gap:14px;margin-top:22px}
+.gold-points li{display:flex;gap:12px;font-size:.98rem;color:var(--ink2)}
+.gold-points li svg{width:22px;height:22px;color:var(--o);flex:none}
+.tgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.tcard{background:var(--surf);border:1px solid var(--line);border-radius:var(--r-lg);padding:24px;margin:0;display:flex;flex-direction:column;gap:13px}
+.tcard img{width:62px;height:62px;border-radius:50%;object-fit:cover;border:2px solid var(--osoft)}
+.tcard blockquote{margin:0;font-size:.93rem;color:var(--ink2);line-height:1.6}
+.tcard figcaption{margin-top:auto;font-size:.84rem;color:var(--ink3)}
+.tcard figcaption b{color:var(--ink);font-family:var(--fhead);display:block}
+.ctaband{background:var(--dark);color:#fff;text-align:center;position:relative;overflow:hidden}
+.ctaband h2{color:#fff;font-size:clamp(2rem,3.6vw,3rem);margin-bottom:14px}
+.ctaband p{color:rgba(255,255,255,.7);max-width:50ch;margin:0 auto 28px}
+.ctaband .hero-cta{justify-content:center}
+footer{background:#0F0D0B;color:rgba(255,255,255,.62);padding:64px 0 28px}
+.fgrid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1.3fr;gap:36px;margin-bottom:40px}
+footer .word{font-family:var(--fhead);color:#fff;font-weight:600;font-size:1.3rem}
+footer .tag{font-size:.9rem;margin:14px 0 0;max-width:34ch}
+footer h5{color:#fff;font-family:var(--fhead);font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:16px;font-weight:700}
+footer ul{list-style:none;display:flex;flex-direction:column;gap:10px}
+footer ul a{font-size:.9rem;transition:color .2s} footer ul a:hover{color:var(--o)}
+.fbottom{border-top:1px solid rgba(255,255,255,.08);padding-top:22px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:.8rem;color:rgba(255,255,255,.4)}
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+@media(max-width:920px){
+  .gold-wrap,.anat-wrap{grid-template-columns:1fr;gap:28px}
+  .statband .wrap{grid-template-columns:repeat(3,1fr);gap:26px}
+  .vs{grid-template-columns:1fr}
+  .mgrid,.tgrid,.gallery{grid-template-columns:repeat(2,1fr)}
+  .nav-links{display:none}
+  .fgrid{grid-template-columns:1fr 1fr}
+  .table-scroll{overflow-x:auto}.ctable{min-width:680px}
+}
+@media(max-width:560px){
+  .statband .wrap{grid-template-columns:repeat(2,1fr)}
+  .mgrid,.tgrid,.gallery{grid-template-columns:1fr}
+  .fgrid{grid-template-columns:1fr}
+  .hero-cta .btn{flex:1;justify-content:center}
+  .hero{padding:118px 0 60px}
+  header{padding:12px 0}
+  .nav-cta .btn-ghost{display:none}
+  .section{padding:50px 0}
+  .shead{margin-bottom:32px}
+  .vcard,.gold-wrap{padding:0}
+  .vcard{padding:26px}
+  .v3d-legend{font-size:.64rem;padding:5px 9px;top:8px;left:8px}
+  .v3d-controls{bottom:8px;right:8px;gap:6px}
+  .v3d-controls button{font-size:.62rem;padding:6px 9px}
+  .ctaband .hero-cta{flex-direction:column}
+}
+@media(max-width:380px){
+  .statband .wrap{grid-template-columns:1fr 1fr;gap:18px}
+  .v3d-legend{flex-wrap:wrap;max-width:160px}
+}
+@media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}.hot{animation:none}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<header id="hdr">
+  <div class="wrap nav">
+    <a class="brand" href="#top">
+      <img src="/img/landing/logo-white.png" alt="Meproind" style="height:clamp(38px,5.4vw,56px);width:auto;display:block" />
+    </a>
+    <nav class="nav-links">
+      <a href="#modelos">Modelos</a>
+      <a href="#tecnologia">Tecnología</a>
+      <a href="#comparativa">Comparativa</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn btn-ghost btn-sm" href="https://app.meproind.com">Acceso clientes</a>
+      <a class="btn btn-o btn-sm" data-wa="Hola, deseo más información sobre las mesas gravimétricas Meproind." href="#contacto"><i data-lucide="message-circle"></i>Cotizar</a>
+    </div>
+  </div>
+</header>
+
+<a id="top"></a>
+<section class="hero">
+  <div class="wrap">
+    <div class="reveal in" style="max-width:680px">
+      <span class="eyebrow">Especialistas en recuperación de oro</span>
+      <h1 style="margin-top:18px">Recupere hasta <span class="accent">91%</span> de su oro. Sin mercurio.</h1>
+      <p class="lead">Mesas gravimétricas de alta precisión, fabricadas en el Perú. Separación únicamente con agua — captura partículas finas y gruesas, sin químicos tóxicos.</p>
+      <div class="hero-cta">
+        <a class="btn btn-o" data-wa="Hola, deseo más información sobre las mesas gravimétricas Meproind." href="#contacto"><i data-lucide="message-circle"></i>Solicitar cotización</a>
+        <a class="btn btn-ghost" href="#modelos">Ver modelos<i data-lucide="arrow-down"></i></a>
+      </div>
+      <div class="hero-trust"><i data-lucide="badge-check"></i>Tecnología propia GoldTech Pro Slots® · Fabricación en Arequipa, Perú</div>
+    </div>
+  </div>
+</section>
+
+<section class="statband">
+  <div class="wrap">
+    <div class="stat"><div class="n o"><span data-count="91">0</span>%</div><div class="l">Recuperación de oro</div></div>
+    <div class="stat"><div class="n"><span data-count="0">0</span>%</div><div class="l">Mercurio · solo agua</div></div>
+    <div class="stat"><div class="n">2.5</div><div class="l">tn/h capacidad máx.</div></div>
+    <div class="stat"><div class="n"><span data-count="4">0</span></div><div class="l">Modelos disponibles</div></div>
+    <div class="stat"><div class="n">+<span data-count="4">0</span></div><div class="l">Años de experiencia</div></div>
+  </div>
+</section>
+
+<section class="trust">
+  <div class="wrap">
+    <div class="ti"><i data-lucide="microscope"></i>Desarrollada con ingenieros de mina</div>
+    <div class="ti"><i data-lucide="cpu"></i>Tecnología propia GoldTech Pro Slots®</div>
+    <div class="ti"><i data-lucide="shield-check"></i>Estructura de acero reforzada</div>
+    <div class="ti"><i data-lucide="leaf"></i>0% mercurio · ecoamigable</div>
+  </div>
+</section>
+
+<section class="section" id="comparativa">
+  <div class="wrap">
+    <div class="shead center reveal">
+      <span class="eyebrow">Por qué MEPROIND</span>
+      <h2>Más oro. Más años de vida. <span class="o">Cero químicos.</span></h2>
+      <p class="lead" style="margin:0 auto">La diferencia entre recuperar el 70% y recuperar el 91% es la rentabilidad de toda su operación.</p>
+    </div>
+    <div class="vs reveal">
+      <div class="vcard win">
+        <span class="badge"><i data-lucide="check"></i></span>
+        <h3>Mesa MEPROIND</h3><div class="uline"></div>
+        <ul class="vlist">
+          <li><i data-lucide="check"></i>Recoge más oro y minerales — hasta 91% de recuperación.</li>
+          <li><i data-lucide="check"></i>Captura partículas finas y gruesas.</li>
+          <li><i data-lucide="check"></i>Estructura de acero reforzada + piedra carburada con fibra de vidrio.</li>
+          <li><i data-lucide="check"></i>Resiste el sol y la intemperie — diseñada para durar años.</li>
+          <li><i data-lucide="check"></i>Separación solo con agua, reutilizable y sin químicos.</li>
+        </ul>
+      </div>
+      <div class="vcard lose">
+        <span class="badge"><i data-lucide="x"></i></span>
+        <h3>Otras mesas</h3><div class="uline"></div>
+        <ul class="vlist">
+          <li><i data-lucide="x"></i>Solo 70 – 80% de recuperación, perdiendo las partículas finas.</li>
+          <li><i data-lucide="x"></i>La mesa se raja en cuestión de meses.</li>
+          <li><i data-lucide="x"></i>Estructura metálica débil que no soporta la intemperie.</li>
+          <li><i data-lucide="x"></i>Canal de irrigación de madera que se pudre con el agua.</li>
+          <li><i data-lucide="x"></i>Mayor consumo de agua y uso de mercurio o cianuro.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:var(--canvas)">
+  <div class="wrap">
+    <div class="shead center reveal">
+      <span class="eyebrow">El método tradicional</span>
+      <h2>El mercurio y el cianuro <span class="o">dañan tu salud y el ambiente</span></h2>
+      <p class="lead" style="margin:0 auto">Los métodos tradicionales de recuperación de oro usan químicos tóxicos que ponen en riesgo a su equipo, a las comunidades y al planeta.</p>
+    </div>
+    <div class="reveal gold-wrap">
+      <img src="/img/landing/panning.jpg" alt="Recuperación de oro con el método tradicional que usa mercurio" style="width:100%;border-radius:var(--r-lg);box-shadow:var(--sh2);border:1px solid var(--line)" />
+      <div>
+        <ul class="vlist" style="margin-bottom:24px">
+          <li style="color:var(--ink2)"><i data-lucide="alert-triangle" style="color:#E0413E"></i>Daña el sistema nervioso, los riñones y los pulmones.</li>
+          <li style="color:var(--ink2)"><i data-lucide="alert-triangle" style="color:#E0413E"></i>Contamina ríos, suelos y el agua que consumen las comunidades.</li>
+          <li style="color:var(--ink2)"><i data-lucide="alert-triangle" style="color:#E0413E"></i>El cianuro es altamente tóxico y persiste en el ambiente.</li>
+          <li style="color:var(--ink2)"><i data-lucide="alert-triangle" style="color:#E0413E"></i>Expone su operación a riesgos legales y sanitarios.</li>
+        </ul>
+        <div style="background:var(--osoft);border:1px solid rgba(252,143,51,.35);border-radius:var(--r-md);padding:20px">
+          <div style="font-family:var(--fhead);font-weight:800;color:var(--ink);font-size:1.12rem;margin-bottom:6px">La alternativa limpia</div>
+          <p style="font-size:.98rem;color:var(--ink2);margin-bottom:16px">La mesa MEPROIND recupera <b style="color:var(--od)">hasta 91% de su oro solo con agua</b> — 0% mercurio, 0% químicos.</p>
+          <a class="btn btn-o" href="#modelos"><i data-lucide="leaf"></i>Conozca la alternativa limpia</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="background:var(--dark);color:#fff;text-align:center;padding:46px 0;border-top:1px solid var(--dark-line);border-bottom:1px solid var(--dark-line)">
+  <div class="wrap reveal">
+    <p style="font-family:var(--fhead);font-weight:800;font-size:clamp(1.3rem,2.7vw,2.05rem);line-height:1.22;max-width:920px;margin:0 auto;color:#fff">
+      <span style="color:var(--o)">10% más de recuperación de oro</span> que cualquier otra mesa en el Perú. Por cada 10 kilos, eso significa <span style="color:var(--o)">1 kilo —o US$ 77,000— más</span> para su operación.
+    </p>
+  </div>
+</section>
+
+<section class="section models" id="modelos">
+  <div class="wrap">
+    <div class="shead center reveal">
+      <span class="eyebrow">Línea XL</span>
+      <h2>Elija la mesa ideal <span class="o">para su operación</span></h2>
+      <p class="lead" style="margin:0 auto">Desde la minería artesanal hasta la producción industrial. Todos los modelos con hasta 91% de recuperación.</p>
+    </div>
+    <div class="mgrid reveal">
+      <div class="mcard">
+        <img class="photo" src="/img/landing/model-1.jpg" alt="Mesa gravimétrica XL-25 — hasta 200 kg/h, ideal para operaciones artesanales" />
+        <div class="mbody">
+          <a class="btn btn-wa btn-sm" data-wa="Hola, deseo más información sobre la mesa gravimétrica XL-25 de 200 kg/h." href="#contacto"><i data-lucide="message-circle"></i>Consultar</a>
+          <a class="btn btn-ghost-ink btn-sm" target="_blank" href="/planos/xl-25.pdf"><i data-lucide="download"></i>Descargar plano</a>
+        </div>
+      </div>
+      <div class="mcard pop">
+        <span class="pop-badge">Más popular</span>
+        <img class="photo" src="/img/landing/model-2.jpg" alt="Mesa gravimétrica XL-50 — hasta 1 tn/h, la más popular" />
+        <div class="mbody">
+          <a class="btn btn-wa btn-sm" data-wa="Hola, deseo más información sobre la mesa gravimétrica XL-50 de 1 tn/h." href="#contacto"><i data-lucide="message-circle"></i>Consultar</a>
+          <a class="btn btn-ghost-ink btn-sm" target="_blank" href="/planos/xl-50.pdf"><i data-lucide="download"></i>Descargar plano</a>
+        </div>
+      </div>
+      <div class="mcard">
+        <img class="photo" src="/img/landing/model-3.jpg" alt="Mesa gravimétrica XL-75 — hasta 1.5 tn/h, plantas semi-industriales" />
+        <div class="mbody">
+          <a class="btn btn-wa btn-sm" data-wa="Hola, deseo más información sobre la mesa gravimétrica XL-75 de 1.5 tn/h." href="#contacto"><i data-lucide="message-circle"></i>Consultar</a>
+          <a class="btn btn-ghost-ink btn-sm" target="_blank" href="/planos/xl-75.pdf"><i data-lucide="download"></i>Descargar plano</a>
+        </div>
+      </div>
+      <div class="mcard">
+        <img class="photo" src="/img/landing/model-4.jpg" alt="Mesa gravimétrica XL-100 — hasta 2.5 tn/h, producción a gran escala" />
+        <div class="mbody">
+          <a class="btn btn-wa btn-sm" data-wa="Hola, deseo más información sobre la mesa gravimétrica XL-100 de 2.5 tn/h." href="#contacto"><i data-lucide="message-circle"></i>Consultar</a>
+          <a class="btn btn-ghost-ink btn-sm" target="_blank" href="/planos/xl-100.pdf"><i data-lucide="download"></i>Descargar plano</a>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:34px" class="reveal"><a class="btn btn-ghost-ink" target="_blank" href="/planos/xl-100.pdf"><i data-lucide="file-down"></i>Descargar ficha técnica completa</a></div>
+  </div>
+</section>
+
+<section class="claim" style="background:var(--o)">
+  <div class="wrap reveal">
+    <div class="pre">Trabaja</div>
+    <div class="big">100X</div>
+    <div class="sub">veces más rápido que el método tradicional</div>
+  </div>
+</section>
+
+<section class="section" style="background:var(--dark);color:#fff">
+  <div class="wrap">
+    <div class="shead center reveal" style="margin-left:auto;margin-right:auto">
+      <span class="eyebrow">Vista 3D</span>
+      <h2 style="color:#fff">Explore la mesa en <span class="o">3D</span></h2>
+    </div>
+    <div class="reveal">
+      <div class="viewer3d-stage" id="v3dCanvasWrap">
+        <div class="v3d-legend"><span class="v3d-dot" style="--c:#FC8F33"></span>Oro → concentrado<span class="v3d-dot" style="--c:#9a9aa2;margin-left:14px"></span>Relave → descarga</div>
+        <div class="v3d-controls"><button id="v3dPlay" type="button">Pausar simulación</button><button id="v3dSpin" type="button">Detener giro</button></div>
+      </div>
+      <div class="v3d-hint"><i data-lucide="rotate-cw"></i>Arrastre para girar &nbsp;·&nbsp; rueda para acercar &nbsp;·&nbsp; simulación de separación en vivo</div>
+    </div>
+  </div>
+</section>
+
+<section class="section anatomy">
+  <div class="wrap">
+    <div class="shead reveal">
+      <span class="eyebrow">Anatomía de la mesa</span>
+      <h2>Ingeniería en cada componente</h2>
+      <p class="lead">Toque cada punto para ver el detalle de cada parte de la mesa.</p>
+    </div>
+    <div class="anat-wrap reveal">
+      <div class="anat-stage">
+        <img src="/img/landing/m3.jpg" alt="Mesa gravimétrica Meproind con sus componentes" />
+        <button class="hot" data-part="ranuras" style="left:52%;top:41%" aria-label="Mesa ranurada"></button>
+        <button class="hot" data-part="alimentador" style="left:25%;top:39%" aria-label="Alimentador y canal ABS"></button>
+        <button class="hot" data-part="motor" style="left:44%;top:67%" aria-label="Motor"></button>
+        <button class="hot" data-part="estructura" style="left:61%;top:77%" aria-label="Estructura de acero"></button>
+      </div>
+      <div class="anat-panel">
+        <img id="apImg" src="/img/landing/m7.jpg" alt="Detalle del componente" />
+        <div class="pt" id="apT">Mesa ranurada</div>
+        <div class="pd" id="apD">Detalle del componente.</div>
+        <div class="anat-hint"><i data-lucide="hand"></i>Toque los puntos naranjas sobre la mesa</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="shead center reveal">
+      <span class="eyebrow">Comparativa técnica</span>
+      <h2>MEPROIND <span class="o">XL-100</span> frente a otras marcas</h2>
+    </div>
+    <div class="table-scroll reveal">
+      <table class="ctable">
+        <thead><tr><th>Característica</th><th class="hl">Mesa MEPROIND (XL-100)</th><th>Otras marcas</th></tr></thead>
+        <tbody>
+          <tr><td class="feat">Eficiencia y recuperación</td><td class="mep"><b>Hasta 91%</b> de recuperación de oro y otros metales, para partículas finas y gruesas.</td><td class="oth">70 – 80%, perdiendo las partículas finas.</td></tr>
+          <tr><td class="feat">Materiales de construcción</td><td class="mep">Fibra de vidrio + soporte metálico reforzado. Canal de plástico ABS para años de uso.</td><td class="oth">Canal de irrigación de madera que se pudre con el agua.</td></tr>
+          <tr><td class="feat">Tecnología de ranuras</td><td class="mep"><b>GoldTech Pro Slots:</b> geometría avanzada para captura especializada.</td><td class="oth">Ranuras en V con menor retención de minerales.</td></tr>
+          <tr><td class="feat">Consumo de agua</td><td class="mep">Optimizado, relación 70% agua / 30% material.</td><td class="oth">Más alto: 80% agua / 20% material.</td></tr>
+          <tr><td class="feat">Capacidad de procesamiento</td><td class="mep">Ajustable: <b>0.2 – 2.5 tn/h</b> según el mineral.</td><td class="oth">Menor flexibilidad de capacidad y ajuste.</td></tr>
+          <tr><td class="feat">Operación y ajustes</td><td class="mep">Carrera, velocidad de vibración y pendiente personalizables.</td><td class="oth">Una sola velocidad de motor; desperdicia material.</td></tr>
+          <tr><td class="feat">Impacto ambiental</td><td class="mep">Separación solo con agua, reutilizable y sin químicos.</td><td class="oth">Mayor impacto, sin opciones claras de mitigación.</td></tr>
+          <tr><td class="feat">Versatilidad de uso</td><td class="mep">Oro, plata, tungsteno y más, con alta eficiencia.</td><td class="oth">Limitada en la variedad de minerales que procesa.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="section gold" id="tecnologia">
+  <div class="wrap gold-wrap">
+    <div class="reveal gold-visual"><img src="/img/landing/goldtech.jpg" alt="Ranuras GoldTech Pro Slots de la mesa Meproind" /></div>
+    <div class="reveal">
+      <span class="gtag"><i data-lucide="sparkles" style="width:15px;height:15px"></i>Tecnología propia</span>
+      <h2>GoldTech Pro Slots®</h2>
+      <p class="lead">La tecnología de ranuras más avanzada en recuperación de oro, desarrollada en colaboración con científicos e ingenieros de mina para capturar hasta la partícula más fina y difícil.</p>
+      <ul class="gold-points">
+        <li><i data-lucide="target"></i>Geometría optimizada que retiene oro fino que otras mesas dejan escapar.</li>
+        <li><i data-lucide="trending-up"></i>Eficiencia de recuperación sin precedentes — hasta 91% — y mayor retorno sobre la inversión.</li>
+        <li><i data-lucide="sun"></i>Funciona con paneles solares para sitios remotos.</li>
+      </ul>
+      <div class="hero-cta" style="margin-top:28px"><a class="btn btn-o" data-wa="Hola, deseo más información sobre la tecnología GoldTech Pro Slots de Meproind." href="#contacto"><i data-lucide="message-circle"></i>Solicitar más información</a></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:var(--panel)">
+  <div class="wrap">
+    <div class="shead center reveal"><span class="eyebrow">Conoce Meproind</span><h2>Vea nuestras mesas <span class="o">en acción</span></h2></div>
+    <div class="reveal" style="max-width:880px;margin:0 auto;border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh3);border:1px solid var(--line)">
+      <video controls preload="metadata" playsinline poster="/img/landing/m3.jpg" style="width:100%;max-height:74vh;display:block;background:#000">
+        <source src="/video/presentacion.mp4" type="video/mp4" />
+        Su navegador no soporta la reproducción de video.
+      </video>
+    </div>
+  </div>
+</section>
+
+<section style="background:var(--dark);padding:clamp(44px,6vw,72px) 0;text-align:center">
+  <div class="wrap reveal"><img src="/img/landing/seals.png" alt="Garantía hasta 1 año, compra 100% segura, 91% de recuperación" style="max-width:620px;width:100%;margin:0 auto" /></div>
+</section>
+
+<section class="section" style="background:var(--canvas)">
+  <div class="wrap">
+    <div class="shead center reveal"><span class="eyebrow">En la prensa</span><h2>Reportado por <span class="o">El Comercio</span></h2></div>
+    <div class="reveal" style="max-width:760px;margin:0 auto"><img src="/img/landing/comercio.png" alt="Nota de El Comercio: Mesas gravimétricas para concentrar oro, una solución frente al mercurio" style="width:100%;border-radius:var(--r-lg);border:1px solid var(--line);box-shadow:var(--sh2)" /></div>
+  </div>
+</section>
+
+<section class="section" style="background:var(--panel)">
+  <div class="wrap">
+    <div class="shead center reveal"><span class="eyebrow">Testimonios</span><h2>Lo que dicen <span class="o">nuestros clientes</span></h2></div>
+    <div class="tgrid reveal">
+      <figure class="tcard"><img src="/img/landing/t1.png" alt="Luis Ramírez" /><div style="display:flex;gap:2px"><i data-lucide="star" style="width:15px;height:15px;fill:var(--o);color:var(--o)"></i><i data-lucide="star" style="width:15px;height:15px;fill:var(--o);color:var(--o)"></i><i data-lucide="star" style="width:15px;height:15px;fill:var(--o);color:var(--o)"></i><i data-lucide="star" style="width:15px;height:15px;fill:var(--o);color:var(--o)"></i><i data-lucide="star" style="width:15px;height:15px;fill:var(--o);color:var(--o)"></i></div><blockquote>&ldquo;Gracias a la mesa de Meproind logramos una notable mejora en la precisión de nuestros procesos. El servicio ha sido impecable. Una inversión acertada.&rdquo;</blockquote><figcaption><b>Luis Ramírez</b>Minerales del Sur E.I.R.L.</figcaption></figure>
+      <figure class="tcard"><img src="/img/landing/t2.png" alt="Carla Gutiérrez" /><div style="display:flex;gap:2px"><i data-lucide="star" style="width:15px;height:15px;fill:var(--o);color:var(--o)"></i><i data-lucide="star" style="width:15px;height:15px;fill:var(--o);color:var(--o)"></i><i data-lucide="star" style="width:15px;height:15px;fill:var(--o);color:var(--o)"></i><i data-lucide="star" style="width:15px;height:15px;fill:var(--o);color:var(--o)"></i><i data-lucide="star" style="width:15px;height:15px;fill:var(--o);color:var(--o)"></i></div><blockquote>&ldquo;Destacan por su durabilidad y rendimiento. Tras años de uso continuo en condiciones exigentes, siguen funcionando sin problemas.&rdquo;</blockquote><figcaption><b>Carla Gutiérrez</b>Compañía Minera Andina</figcaption></figure>
+      <figure class="tcard"><img src="/img/landing/t3.png" alt="Jorge Quispe" /><div style="display:flex;gap:2px"><i data-lucide="star" style="width:15px;height:15px;fill:var(--o);color:var(--o)"></i><i data-lucide="star" style="width:15px;height:15px;fill:var(--o);color:var(--o)"></i><i data-lucide="star" style="width:15px;height:15px;fill:var(--o);color:var(--o)"></i><i data-lucide="star" style="width:15px;height:15px;fill:var(--o);color:var(--o)"></i><i data-lucide="star" style="width:15px;height:15px;fill:var(--o);color:var(--o)"></i></div><blockquote>&ldquo;Lo que más nos impresionó fue su capacidad para personalizar el equipo. El soporte técnico siempre ha sido rápido y eficiente.&rdquo;</blockquote><figcaption><b>Jorge Quispe</b>Tecnología Minera del Perú S.A.C.</figcaption></figure>
+      <figure class="tcard"><img src="/img/landing/t4.png" alt="Fernando Paredes" /><div style="display:flex;gap:2px"><i data-lucide="star" style="width:15px;height:15px;fill:var(--o);color:var(--o)"></i><i data-lucide="star" style="width:15px;height:15px;fill:var(--o);color:var(--o)"></i><i data-lucide="star" style="width:15px;height:15px;fill:var(--o);color:var(--o)"></i><i data-lucide="star" style="width:15px;height:15px;fill:var(--o);color:var(--o)"></i><i data-lucide="star" style="width:15px;height:15px;fill:var(--o);color:var(--o)"></i></div><blockquote>&ldquo;Aumentaron nuestra capacidad de producción en un 30%. Equipos robustos, fáciles de operar y mantener.&rdquo;</blockquote><figcaption><b>Fernando Paredes</b>Industria Minera Lima</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:var(--canvas)">
+  <div class="wrap">
+    <div class="shead center reveal"><span class="eyebrow">Visítenos</span><h2>Nuestro local en <span class="o">Arequipa</span></h2></div>
+    <div class="reveal gold-wrap">
+      <img src="/img/landing/local-arequipa.jpg" alt="Local Meproind en Arequipa — A.HH. Horacio Zeballos Gomez, Zona Industrial" style="width:100%;border-radius:var(--r-lg);box-shadow:var(--sh2);border:1px solid var(--line)" />
+      <div>
+        <span class="eyebrow">Ubicación estratégica</span>
+        <h3 style="font-size:1.6rem;margin:12px 0 14px">Encuéntranos en Arequipa</h3>
+        <p style="font-size:1.05rem;color:var(--ink2);margin-bottom:8px">A.HH. Horacio Zeballos Gomez, Sector 6, Mz 3 Lote 10. Av. Socabaya Uchumayo, Zona Industrial – Arequipa.</p>
+        <p style="font-size:.95rem;color:var(--ink3);margin-bottom:22px">Búscanos como <b style="color:var(--ink)">MEPROIND</b> en Google Maps o Waze.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <a class="btn btn-o" target="_blank" rel="noopener" href="https://www.google.com/maps/search/MEPROIND+Arequipa"><i data-lucide="map-pin"></i>Google Maps</a>
+          <a class="btn btn-ghost-ink" target="_blank" rel="noopener" href="https://www.waze.com/ul?q=MEPROIND%20Arequipa"><i data-lucide="navigation"></i>Waze</a>
+        </div>
+        <p style="font-size:.95rem;color:var(--ink2);margin-top:20px"><i data-lucide="message-circle" style="width:16px;height:16px;display:inline;vertical-align:-3px;color:var(--wa)"></i> WhatsApp: <b style="color:var(--ink)">+51 960 577 642</b> ó <b style="color:var(--ink)">+51 936 702 242</b></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section ctaband" id="contacto">
+  <div class="wrap reveal">
+    <span class="eyebrow" style="justify-content:center;display:flex">Hablemos de su operación</span>
+    <h2 style="margin-top:16px">Aumente la recuperación de su planta</h2>
+    <p>Cuéntenos su capacidad y el tipo de mineral. Le recomendamos el modelo ideal y le enviamos una cotización a su medida.</p>
+    <div class="hero-cta">
+      <a class="btn btn-wa" data-wa="Hola, deseo más información sobre las mesas gravimétricas Meproind." href="#"><i data-lucide="message-circle"></i>Escribir por WhatsApp</a>
+      <a class="btn btn-ghost" data-wa="Hola, deseo solicitar una cotización de las mesas gravimétricas Meproind." href="#"><i data-lucide="file-text"></i>Solicitar cotización</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="fgrid">
+      <div>
+        <div class="brand"><img src="/img/landing/logo-white.png" alt="Meproind" style="height:40px;width:auto" /></div>
+        <p class="tag">Mejorando procesos industriales. Especialistas en mesas gravimétricas para la recuperación de oro y otros metales.</p>
+      </div>
+      <div><h5>Modelos</h5><ul><li><a href="#modelos">XL-25</a></li><li><a href="#modelos">XL-50</a></li><li><a href="#modelos">XL-75</a></li><li><a href="#modelos">XL-100</a></li></ul></div>
+      <div><h5>Empresa</h5><ul><li><a href="#tecnologia">Tecnología</a></li><li><a href="#comparativa">Comparativa</a></li><li><a href="#contacto">Contacto</a></li><li><a href="https://app.meproind.com">Acceso clientes</a></li></ul></div>
+      <div><h5>Contacto</h5><ul><li><a data-wa="Hola, deseo más información sobre las mesas gravimétricas Meproind." href="#"><i data-lucide="message-circle" style="width:15px;height:15px;display:inline;vertical-align:-2px"></i> WhatsApp: +51 960 577 642</a></li><li><a href="mailto:admin@dechinaaperu.com">admin@dechinaaperu.com</a></li><li>Arequipa: A.HH. Horacio Zeballos Gomez, Zona Industrial</li><li>Lima: Av. Don Diego de Día 228, Surco</li></ul></div>
+    </div>
+    <div class="fbottom">
+      <span>© 2026 MEPROIND · DeChinaAPeru.com E.I.R.L. Todos los derechos reservados.</span>
+      <span>Mesas gravimétricas XL-25 · XL-50 · XL-75 · XL-100</span>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var hdr=document.getElementById('hdr');
+  function onScroll(){ if(window.scrollY>40) hdr.classList.add('scrolled'); else hdr.classList.remove('scrolled'); }
+  onScroll(); window.addEventListener('scroll',onScroll,{passive:true});
+
+  var revs=document.querySelectorAll('.reveal');
+  if(reduce){ revs.forEach(function(e){e.classList.add('in')}); }
+  else{ var io=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target);}})},{threshold:.14}); revs.forEach(function(e){io.observe(e)}); }
+
+  function countUp(el){ var target=parseFloat(el.getAttribute('data-count'));
+    if(reduce||target===0){el.textContent=target;return;}
+    var dur=1100,start=null;
+    function step(ts){ if(!start)start=ts; var p=Math.min((ts-start)/dur,1); el.textContent=Math.round(target*(1-Math.pow(1-p,3))); if(p<1)requestAnimationFrame(step); }
+    requestAnimationFrame(step);
+  }
+  var counted=false, sb=document.querySelector('.statband');
+  var io2=new IntersectionObserver(function(es){es.forEach(function(en){ if(en.isIntersecting&&!counted){counted=true; document.querySelectorAll('[data-count]').forEach(countUp);} })},{threshold:.3});
+  if(sb)io2.observe(sb);
+
+  var parts={
+    ranuras:{t:'Mesa ranurada · GoldTech Pro Slots®',d:'Geometría de ranuras que captura hasta la partícula más fina de oro — hasta 91% de recuperación.',img:'/img/landing/m7.jpg'},
+    alimentador:{t:'Alimentador y canal ABS',d:'El alimentador reparte la pulpa de forma pareja sobre la mesa; el canal de irrigación de plástico ABS resiste años sin pudrirse.',img:'/img/landing/m5.jpg'},
+    motor:{t:'Motor 2.2 kW + variador',d:'Velocidad ajustable para adaptarse a cualquier tipo de material, maximizando la productividad y el control.',img:'/img/landing/m6.jpg'},
+    estructura:{t:'Estructura de acero reforzada',d:'Soporte metálico reforzado y tablero de piedra carburada con fibra de vidrio. Resiste el sol y la intemperie.',img:'/img/landing/m3.jpg'}
+  };
+  function setPart(k){ var p=parts[k]; if(!p)return; var im=document.getElementById('apImg'); im.src=p.img; im.alt=p.t; document.getElementById('apT').textContent=p.t; document.getElementById('apD').textContent=p.d; document.querySelectorAll('.hot').forEach(function(h){h.classList.toggle('active',h.getAttribute('data-part')===k)}); }
+  document.querySelectorAll('.hot').forEach(function(h){h.addEventListener('click',function(){setPart(h.getAttribute('data-part'))})});
+  setPart('ranuras');
+
+  (function(){
+    var rot=document.getElementById('v3dRot'); if(!rot) return;
+    var angle=0, vel=0, dragging=false, lastX=0, auto=!reduce;
+    function render(){ rot.style.transform='rotateY('+angle+'deg)'; }
+    function down(x){ dragging=true; auto=false; lastX=x; rot.classList.add('grabbing'); }
+    function move(x){ if(!dragging) return; var dx=x-lastX; lastX=x; angle+=dx*0.6; vel=dx*0.6; render(); }
+    function up(){ dragging=false; rot.classList.remove('grabbing'); }
+    rot.addEventListener('pointerdown',function(e){ down(e.clientX); e.preventDefault(); });
+    window.addEventListener('pointermove',function(e){ move(e.clientX); });
+    window.addEventListener('pointerup',up);
+    function loop(){ if(!dragging){ if(auto){ angle+=0.22; } else if(vel){ angle+=vel; vel*=0.94; if(Math.abs(vel)<0.03) vel=0; } render(); } requestAnimationFrame(loop); }
+    render(); loop();
+  })();
+
+  var WA='https://api.whatsapp.com/send?phone=51960577642&text=';
+  document.querySelectorAll('[data-wa]').forEach(function(a){
+    var msg=a.getAttribute('data-wa')||'Hola, deseo más información sobre las mesas gravimétricas Meproind.';
+    var card=a.closest('.mcard');
+    if(card){ var n=card.querySelector('.mname'), c=card.querySelector('.cap'); if(n&&c){ msg='Hola, deseo saber más información sobre la mesa gravimétrica '+n.textContent.trim()+' de '+c.textContent.replace(/\s+/g,' ').trim()+'.'; } }
+    a.href=WA+encodeURIComponent(msg); a.target='_blank'; a.rel='noopener';
+  });
+
+  if(window.lucide)lucide.createIcons();
+})();
+</script>
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+const stage=document.getElementById('v3dCanvasWrap');
+if(stage){
+  const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const W=()=>stage.clientWidth||760, H=()=>stage.clientHeight||475;
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(40,W()/H(),0.1,100);
+  camera.position.set(7.2,4.6,7.8);
+  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setSize(W(),H());
+  renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.05;
+  stage.appendChild(renderer.domElement);
+  try{ const pmrem=new THREE.PMREMGenerator(renderer); scene.environment=pmrem.fromScene(new RoomEnvironment(),0.04).texture; }catch(e){}
+  scene.add(new THREE.HemisphereLight(0xfff4e6,0x2a2620,0.5));
+  const key=new THREE.DirectionalLight(0xfff1e0,2.0); key.position.set(8,11,6); key.castShadow=true;
+  key.shadow.mapSize.set(2048,2048); key.shadow.camera.near=1; key.shadow.camera.far=45;
+  key.shadow.camera.left=-10; key.shadow.camera.right=10; key.shadow.camera.top=10; key.shadow.camera.bottom=-10; key.shadow.bias=-0.0004;
+  scene.add(key);
+  const rim=new THREE.DirectionalLight(0xfc8f33,0.7); rim.position.set(-7,3,-6); scene.add(rim);
+  const matDeck=new THREE.MeshStandardMaterial({color:0x161618,roughness:0.42,metalness:0.12});
+  const matRiffle=new THREE.MeshStandardMaterial({color:0x242428,roughness:0.4,metalness:0.16});
+  const matApron=new THREE.MeshStandardMaterial({color:0x111113,roughness:0.45,metalness:0.25});
+  const matY=new THREE.MeshStandardMaterial({color:0xF2A800,roughness:0.42,metalness:0.35});
+  const matW=new THREE.MeshStandardMaterial({color:0xeeede8,roughness:0.5,metalness:0.05});
+  const matD=new THREE.MeshStandardMaterial({color:0x121214,roughness:0.45,metalness:0.45});
+  const matSteel=new THREE.MeshStandardMaterial({color:0xb8b8bc,roughness:0.28,metalness:0.9});
+  // ---- static yellow underframe + drive ----
+  const base=new THREE.Group();
+  const legGeo=new THREE.BoxGeometry(0.18,1.05,0.18);
+  [[2.7,0.52,1.25],[2.7,0.52,-1.25],[-2.7,0.52,1.25],[-2.7,0.52,-1.25]].forEach(p=>{const l=new THREE.Mesh(legGeo,matY);l.position.set(p[0],p[1],p[2]);l.castShadow=true;base.add(l);});
+  [1.25,-1.25].forEach(zz=>{const r=new THREE.Mesh(new THREE.BoxGeometry(5.7,0.16,0.16),matY);r.position.set(0,1.02,zz);r.castShadow=true;base.add(r);});
+  [2.7,-2.7].forEach(xx=>{const r=new THREE.Mesh(new THREE.BoxGeometry(0.16,0.16,2.66),matY);r.position.set(xx,1.02,0);r.castShadow=true;base.add(r);});
+  [1.25,-1.25].forEach(zz=>{const r=new THREE.Mesh(new THREE.BoxGeometry(5.5,0.13,0.13),matY);r.position.set(0,0.18,zz);r.castShadow=true;base.add(r);});
+  const drive=new THREE.Mesh(new THREE.BoxGeometry(0.95,0.7,1.0),matY); drive.position.set(-2.55,0.5,0.85); drive.castShadow=true; base.add(drive);
+  const motorBody=new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.3,0.85,28),matD); motorBody.rotation.x=Math.PI/2; motorBody.position.set(-2.55,0.85,0.35); motorBody.castShadow=true; base.add(motorBody);
+  const motorFin=new THREE.Mesh(new THREE.CylinderGeometry(0.33,0.33,0.1,28),matSteel); motorFin.rotation.x=Math.PI/2; motorFin.position.set(-2.55,0.85,0.0); base.add(motorFin);
+  const fwGroup=new THREE.Group(); fwGroup.position.set(-2.55,0.85,1.12);
+  const shaft=new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.07,0.78,16),matSteel); shaft.rotation.x=Math.PI/2; shaft.position.set(0,0,-0.42); fwGroup.add(shaft);
+  const flywheel=new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.5,0.12,40),matD); flywheel.rotation.x=Math.PI/2; flywheel.castShadow=true; fwGroup.add(flywheel);
+  const fwInner=new THREE.Mesh(new THREE.CylinderGeometry(0.4,0.4,0.13,40),matSteel); fwInner.rotation.x=Math.PI/2; fwGroup.add(fwInner);
+  for(let s=0;s<4;s++){ const sp=new THREE.Mesh(new THREE.BoxGeometry(0.78,0.06,0.04),matD); sp.rotation.z=s*Math.PI/4; fwGroup.add(sp); }
+  const eccPin=new THREE.Object3D(); eccPin.position.set(0,0.18,0.09); fwGroup.add(eccPin);
+  const eccMesh=new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,0.16,12),matSteel); eccMesh.rotation.x=Math.PI/2; eccMesh.position.set(0,0.18,0.05); fwGroup.add(eccMesh);
+  base.add(fwGroup);
+  const rod=new THREE.Mesh(new THREE.BoxGeometry(1,0.09,0.09),matSteel); rod.castShadow=true; scene.add(rod);
+  scene.add(base);
+  // ---- shaking deck (black body + fine riffles + white trim) ----
+  const deckPivot=new THREE.Group(); deckPivot.position.set(0,1.5,0); deckPivot.rotation.x=THREE.MathUtils.degToRad(-4.0);
+  const deckShake=new THREE.Group(); deckPivot.add(deckShake);
+  const apron=new THREE.Mesh(new THREE.BoxGeometry(5.95,0.4,2.82),matApron); apron.position.set(0,-0.13,0); apron.castShadow=true; apron.receiveShadow=true; deckShake.add(apron);
+  const deck=new THREE.Mesh(new THREE.BoxGeometry(5.5,0.07,2.5),matDeck); deck.position.set(0.05,0.085,0); deck.castShadow=true; deck.receiveShadow=true; deckShake.add(deck);
+  const riffles=new THREE.Group(); const ridgeGeo=new THREE.BoxGeometry(5.4,0.03,0.028);
+  for(let k=0;k<34;k++){ const bar=new THREE.Mesh(ridgeGeo,matRiffle); bar.position.set(0.05,0.12,1.18-k*0.072); riffles.add(bar); }
+  deckShake.add(riffles);
+  const launder=new THREE.Mesh(new THREE.BoxGeometry(5.7,0.2,0.26),matW); launder.position.set(0,0.13,1.36); launder.castShadow=true; deckShake.add(launder);
+  const lowLip=new THREE.Mesh(new THREE.BoxGeometry(5.7,0.1,0.14),matW); lowLip.position.set(0,0.06,-1.32); deckShake.add(lowLip);
+  const headTrim=new THREE.Mesh(new THREE.BoxGeometry(0.16,0.16,2.5),matW); headTrim.position.set(-2.78,0.1,0); deckShake.add(headTrim);
+  const feed=new THREE.Mesh(new THREE.BoxGeometry(0.9,0.34,1.0),matW); feed.position.set(-2.45,0.22,0.85); feed.castShadow=true; deckShake.add(feed);
+  const post=new THREE.Mesh(new THREE.CylinderGeometry(0.045,0.045,1.1,12),matY); post.position.set(-2.4,0.7,1.45); post.castShadow=true; deckShake.add(post);
+  const handle=new THREE.Mesh(new THREE.CylinderGeometry(0.045,0.045,0.9,12),matY); handle.rotation.z=Math.PI/2; handle.position.set(-2.0,1.2,1.45); handle.castShadow=true; deckShake.add(handle);
+  const water=new THREE.Mesh(new THREE.PlaneGeometry(5.3,2.4), new THREE.MeshStandardMaterial({color:0x7fbce0,transparent:true,opacity:0.18,roughness:0.06,metalness:0})); water.rotation.x=-Math.PI/2; water.position.set(0.1,0.13,-0.05); deckShake.add(water);
+  const headAnchor=new THREE.Object3D(); headAnchor.position.set(-2.95,-0.6,1.05); deckShake.add(headAnchor);
+  scene.add(deckPivot);
+  const concTrough=new THREE.Mesh(new THREE.BoxGeometry(0.45,0.16,2.6),matD); concTrough.position.set(3.15,1.42,0); concTrough.castShadow=true; scene.add(concTrough);
+  const tailTrough=new THREE.Mesh(new THREE.BoxGeometry(5.7,0.14,0.4),matD); tailTrough.position.set(0,1.28,-1.68); tailTrough.castShadow=true; scene.add(tailTrough);
+  // ---- particles (soft round, small, like droplets) ----
+  const psc=document.createElement('canvas'); psc.width=psc.height=64; const pcx=psc.getContext('2d');
+  const grd=pcx.createRadialGradient(32,32,0,32,32,32); grd.addColorStop(0,'rgba(255,255,255,1)'); grd.addColorStop(0.45,'rgba(255,255,255,0.8)'); grd.addColorStop(1,'rgba(255,255,255,0)');
+  pcx.fillStyle=grd; pcx.fillRect(0,0,64,64); const sprite=new THREE.CanvasTexture(psc);
+  const N=520, pGeo=new THREE.BufferGeometry();
+  const pos=new Float32Array(N*3), col=new Float32Array(N*3), data=[];
+  const GOLD=new THREE.Color(0xFC8F33), TAIL=new THREE.Color(0xc4c4c9);
+  function spawn(i){ data[i]={gold:Math.random()<0.4, x:-2.35+Math.random()*0.5, z:0.35+Math.random()*0.75}; }
+  function setCol(i){ const c=data[i].gold?GOLD:TAIL; col[i*3]=c.r;col[i*3+1]=c.g;col[i*3+2]=c.b; }
+  for(let i=0;i<N;i++){ spawn(i); setCol(i); }
+  pGeo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  pGeo.setAttribute('color',new THREE.BufferAttribute(col,3));
+  const points=new THREE.Points(pGeo,new THREE.PointsMaterial({size:0.05,map:sprite,vertexColors:true,transparent:true,opacity:0.95,alphaTest:0.04,depthWrite:false,sizeAttenuation:true})); deckShake.add(points);
+  const WN=300, wGeo=new THREE.BufferGeometry(), wpos=new Float32Array(WN*3), wdata=[];
+  function wspawn(i){ wdata[i]={x:-2.3+Math.random()*5.0, z:1.1+Math.random()*0.28}; }
+  for(let i=0;i<WN;i++){ wspawn(i); }
+  wGeo.setAttribute('position',new THREE.BufferAttribute(wpos,3));
+  const waterPts=new THREE.Points(wGeo,new THREE.PointsMaterial({size:0.038,map:sprite,color:0x9ad8f5,transparent:true,opacity:0.5,alphaTest:0.03,depthWrite:false,sizeAttenuation:true})); deckShake.add(waterPts);
+  function updateWater(dt){ for(let i=0;i<WN;i++){ const d=wdata[i];
+      d.z-=dt*1.45; d.x+=dt*0.12+(Math.random()-0.5)*0.02;
+      if(d.z<-1.32){ wspawn(i); }
+      const o=i*3; wpos[o]=d.x; wpos[o+1]=0.135; wpos[o+2]=d.z; }
+    wGeo.attributes.position.needsUpdate=true; }
+  function updateParticles(dt){ for(let i=0;i<N;i++){ const d=data[i];
+      if(d.gold){ d.x+=dt*0.9; d.z-=dt*0.03; } else { d.x+=dt*0.5; d.z-=dt*0.8; }
+      d.x+=(Math.random()-0.5)*0.01; d.z+=(Math.random()-0.5)*0.01;
+      if(d.x>2.7||d.z<-1.4){ spawn(i); setCol(i); pGeo.attributes.color.needsUpdate=true; }
+      const o=i*3; pos[o]=d.x; pos[o+1]=0.16; pos[o+2]=d.z;
+    } pGeo.attributes.position.needsUpdate=true; }
+  const ground=new THREE.Mesh(new THREE.PlaneGeometry(80,80),new THREE.ShadowMaterial({opacity:0.28})); ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; scene.add(ground);
+  const controls=new OrbitControls(camera,renderer.domElement);
+  controls.enableDamping=true; controls.dampingFactor=0.08; controls.enablePan=false;
+  controls.autoRotate=!reduceMotion; controls.autoRotateSpeed=0.9;
+  controls.minDistance=5.5; controls.maxDistance=17; controls.maxPolarAngle=Math.PI/2.04;
+  controls.target.set(0,1.4,0); controls.update();
+  let sim=!reduceMotion;
+  const pBtn=document.getElementById('v3dPlay'), sBtn=document.getElementById('v3dSpin');
+  if(pBtn){ pBtn.textContent=sim?'Pausar simulación':'Iniciar simulación'; pBtn.addEventListener('click',()=>{ sim=!sim; pBtn.textContent=sim?'Pausar simulación':'Iniciar simulación'; }); }
+  if(sBtn){ sBtn.textContent=controls.autoRotate?'Detener giro':'Girar solo'; sBtn.addEventListener('click',()=>{ controls.autoRotate=!controls.autoRotate; sBtn.textContent=controls.autoRotate?'Detener giro':'Girar solo'; }); }
+  addEventListener('resize',()=>{ camera.aspect=W()/H(); camera.updateProjectionMatrix(); renderer.setSize(W(),H()); });
+  const clock=new THREE.Clock(); let theta=0;
+  const pinW=new THREE.Vector3(), headW=new THREE.Vector3(), mid=new THREE.Vector3(), dir=new THREE.Vector3(), xAxis=new THREE.Vector3(1,0,0);
+  function loop(){ requestAnimationFrame(loop); const dt=Math.min(clock.getDelta(),0.05);
+    if(sim){ theta+=dt*28; fwGroup.rotation.z=theta; deckShake.position.x=-Math.sin(theta)*0.1; updateParticles(dt); updateWater(dt); }
+    eccPin.getWorldPosition(pinW); headAnchor.getWorldPosition(headW);
+    mid.addVectors(pinW,headW).multiplyScalar(0.5); rod.position.copy(mid);
+    dir.subVectors(headW,pinW); rod.scale.x=Math.max(dir.length(),0.001); rod.quaternion.setFromUnitVectors(xAxis,dir.normalize());
+    controls.update(); renderer.render(scene,camera); }
+  loop();
+}
+</script>
+</body>
+</html>
