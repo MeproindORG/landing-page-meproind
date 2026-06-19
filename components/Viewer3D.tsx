@@ -71,7 +71,7 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(40, W() / H(), 0.1, 100);
-    camera.position.set(7.6, 4.8, 8.2);
+    camera.position.set(8.8, 5.4, 9.4);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -356,8 +356,8 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
 
     // Operario A — agarra mineral del montículo y lo echa a la tolva
     const feeder = buildWorker(0x2f4d6e, 0xf2a800);
-    feeder.position.set(-3.5, 0, 1.95);
-    feeder.rotation.y = 2.46; // mira hacia la tolva
+    feeder.position.set(-4.45, 0, 2.35);
+    feeder.rotation.y = 2.22; // mira hacia la tolva
     feeder.scale.setScalar(2.0);
     const shovel = new THREE.Group();
     const sHandle = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.6, 8), handleMat);
@@ -383,26 +383,19 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
     feeder.userData.oreLoad = oreLoad;
     scene.add(feeder);
 
-    // montículo de mineral (fuente) + sacos junto al operario
-    const orePile = new THREE.Mesh(new THREE.ConeGeometry(0.5, 0.4, 18), matOre);
-    orePile.position.set(-4.2, 0.2, 1.75);
-    orePile.castShadow = true;
-    orePile.receiveShadow = true;
-    scene.add(orePile);
+    // montículos de mineral (fuente) — todos cónicos; el operario palea del más cercano
     (
       [
-        [-4.55, 0.7],
-        [-4.6, 1.45],
+        [-3.55, 1.6, 0.55, 0.42], // principal (donde cae la pala)
+        [-4.95, 2.95, 0.46, 0.36],
+        [-5.25, 2.35, 0.4, 0.32],
       ] as const
-    ).forEach((s) => {
-      const sack = new THREE.Mesh(
-        new THREE.SphereGeometry(0.34, 12, 10),
-        new THREE.MeshStandardMaterial({ color: 0x6f5f39, roughness: 0.95 }),
-      );
-      sack.scale.set(1, 0.78, 0.82);
-      sack.position.set(s[0], 0.24, s[1]);
-      sack.castShadow = true;
-      scene.add(sack);
+    ).forEach((m) => {
+      const mound = new THREE.Mesh(new THREE.ConeGeometry(m[2], m[3], 18), matOre);
+      mound.position.set(m[0], m[3] / 2, m[1]);
+      mound.castShadow = true;
+      mound.receiveShadow = true;
+      scene.add(mound);
     });
 
     // Operario B — recibe el concentrado de oro en una batea (plana, al frente)
