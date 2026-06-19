@@ -386,7 +386,7 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
     // montículos de mineral (fuente) — todos cónicos; el operario palea del más cercano
     (
       [
-        [-3.3, 0.66, 0.58, 0.6], // principal (donde cae la pala)
+        [-3.27, 0.63, 0.58, 0.6], // principal (donde cae la pala)
         [-4.75, 2.95, 0.46, 0.4],
         [-5.05, 2.35, 0.4, 0.34],
       ] as const
@@ -728,28 +728,36 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
     // Keyframes: c (fase 0..1), hip (inclinación), sh (hombro: − = al frente), tip (vaciar pala), load (mineral en pala).
     const FEED_CYCLE = 3.6;
     const fK = [
-      { c: 0.0, hip: 0.8, sh: -0.95, tip: 0.0, load: 0.0 },
-      { c: 0.16, hip: 0.8, sh: -1.0, tip: 0.0, load: 1.0 },
-      { c: 0.42, hip: 0.3, sh: -0.7, tip: 0.0, load: 1.0 },
-      { c: 0.62, hip: 0.0, sh: -1.15, tip: 0.1, load: 1.0 },
-      { c: 0.74, hip: 0.0, sh: -1.25, tip: 1.2, load: 0.0 },
-      { c: 0.88, hip: 0.35, sh: -0.7, tip: 0.2, load: 0.0 },
-      { c: 1.0, hip: 0.8, sh: -0.95, tip: 0.0, load: 0.0 },
+      { hip: 0.8, sh: -0.98, tip: 0.0, load: 0.0 }, // 0 cavar (fondo)
+      { hip: 0.8, sh: -1.0, tip: 0.0, load: 1.0 }, //  1 cargado
+      { hip: 0.3, sh: -0.7, tip: 0.0, load: 1.0 }, //  2 sube
+      { hip: 0.0, sh: -1.15, tip: 0.1, load: 1.0 }, // 3 al frente
+      { hip: 0.0, sh: -1.25, tip: 1.2, load: 0.0 }, // 4 vuelca (lanza el mineral)
+      { hip: 0.4, sh: -0.7, tip: 0.2, load: 0.0 }, //  5 regresa
     ];
+    // Catmull-Rom cíclico: el brazo fluye continuo por los keyframes (sin frenar en cada uno).
+    const crom = (p0: number, p1: number, p2: number, p3: number, t: number) => {
+      const t2 = t * t;
+      const t3 = t2 * t;
+      return (
+        0.5 *
+        (2 * p1 + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 + (-p0 + 3 * p1 - 3 * p2 + p3) * t3)
+      );
+    };
     function animateFeeder(time: number) {
       const c = (time % FEED_CYCLE) / FEED_CYCLE;
-      let i = 0;
-      while (i < fK.length - 1 && c > fK[i + 1].c) i++;
-      const k0 = fK[i];
-      const k1 = fK[Math.min(i + 1, fK.length - 1)];
-      const span = Math.max(k1.c - k0.c, 1e-4);
-      const lt = (c - k0.c) / span;
-      const e = lt * lt * (3 - 2 * lt); // smoothstep
-      const lerp = (a: number, b: number) => a + (b - a) * e;
-      (feeder.userData.hip as THREE.Group).rotation.x = lerp(k0.hip, k1.hip);
-      (feeder.userData.rShoulder as THREE.Group).rotation.x = lerp(k0.sh, k1.sh);
-      (feeder.userData.bladePivot as THREE.Group).rotation.x = lerp(k0.tip, k1.tip);
-      const load = lerp(k0.load, k1.load);
+      const m = fK.length; // 6 keyframes uniformes
+      const f = c * m;
+      const i = Math.floor(f) % m;
+      const t = f - Math.floor(f);
+      const p0 = fK[(i - 1 + m) % m];
+      const p1 = fK[i];
+      const p2 = fK[(i + 1) % m];
+      const p3 = fK[(i + 2) % m];
+      (feeder.userData.hip as THREE.Group).rotation.x = crom(p0.hip, p1.hip, p2.hip, p3.hip, t);
+      (feeder.userData.rShoulder as THREE.Group).rotation.x = crom(p0.sh, p1.sh, p2.sh, p3.sh, t);
+      (feeder.userData.bladePivot as THREE.Group).rotation.x = crom(p0.tip, p1.tip, p2.tip, p3.tip, t);
+      const load = Math.min(Math.max(crom(p0.load, p1.load, p2.load, p3.load, t), 0), 1);
       const ol = feeder.userData.oreLoad as THREE.Mesh;
       const s = Math.max(load, 0.001);
       ol.scale.set(s, s * 0.45, s);
@@ -777,7 +785,7 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
         (collector.userData.pan as THREE.Mesh).getWorldPosition(goldTarget);
         updateGold(dt);
         const cyc = (t % FEED_CYCLE) / FEED_CYCLE;
-        if (prevCycle < 0.74 && cyc >= 0.74) emitThrow();
+        if (prevCycle < 0.66 && cyc >= 0.66) emitThrow();
         prevCycle = cyc;
         updateThrownOre(dt);
         // tiempo acelerado + oro acumulado
