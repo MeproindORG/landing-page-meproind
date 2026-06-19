@@ -356,9 +356,9 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
 
     // Operario A — agarra mineral del montículo y lo echa a la tolva
     const feeder = buildWorker(0x2f4d6e, 0xf2a800);
-    feeder.position.set(-3.4, 0, 1.95);
-    feeder.rotation.y = 2.4; // mira hacia la tolva
-    feeder.scale.setScalar(1.12);
+    feeder.position.set(-3.05, 0, 1.62);
+    feeder.rotation.y = 2.5; // mira hacia la tolva
+    feeder.scale.setScalar(1.42);
     const shovel = new THREE.Group();
     const sHandle = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.6, 8), handleMat);
     sHandle.position.set(0, -0.18, 0.12);
@@ -405,18 +405,29 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
       scene.add(sack);
     });
 
-    // Operario B — recoge el concentrado de oro en una batea
+    // Operario B — recibe el concentrado de oro en una batea (plana, al frente)
     const collector = buildWorker(0x3b3f46, 0xf2a800);
-    collector.position.set(3.95, 0, 0.55);
+    collector.position.set(4.0, 0, 0.5);
     collector.rotation.y = -Math.PI / 2; // mira hacia -x (la mesa)
-    collector.scale.setScalar(1.12);
+    collector.scale.setScalar(1.42);
+    const panHolder = new THREE.Group();
+    panHolder.position.set(0, 0.16, 0.52); // al frente, a la cintura
+    (collector.userData.hip as THREE.Group).add(panHolder);
     const pan = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.18, 0.14, 0.07, 22, 1, true),
-      new THREE.MeshStandardMaterial({ color: 0x4a3a22, roughness: 0.6, metalness: 0.35, side: THREE.DoubleSide }),
+      new THREE.CylinderGeometry(0.28, 0.17, 0.08, 24),
+      new THREE.MeshStandardMaterial({ color: 0x4a3a22, roughness: 0.6, metalness: 0.4 }),
     );
     pan.castShadow = true;
-    (collector.userData.hand as THREE.Group).add(pan);
-    (collector.userData.rShoulder as THREE.Group).rotation.x = -1.45;
+    pan.receiveShadow = true;
+    panHolder.add(pan);
+    const panGold = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.21, 0.12, 0.045, 20),
+      new THREE.MeshStandardMaterial({ color: 0xffb23e, roughness: 0.4, metalness: 0.4 }),
+    );
+    panGold.position.y = 0.05;
+    panHolder.add(panGold);
+    // ambos brazos al frente, sosteniendo la batea
+    (collector.userData.rShoulder as THREE.Group).rotation.x = -1.2;
     (collector.userData.lShoulder as THREE.Group).rotation.x = -1.2;
     collector.userData.pan = pan;
     scene.add(collector);
@@ -529,20 +540,21 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
     );
     scene.add(feedPts);
 
-    // ---- concentrado de oro que sale de la mesa y cae a la batea ----
-    const GN = 46;
+    // ---- concentrado de oro que sale de la mesa y cae a la batea del operario B ----
+    const GN = 52;
     const gGeo = new THREE.BufferGeometry();
     const gpos = new Float32Array(GN * 3);
     const gdata: { x: number; y: number; z: number }[] = [];
+    const goldTarget = new THREE.Vector3(3.55, 1.25, 0.5); // batea (se recalcula cada frame)
     function gspawn(i: number) {
-      gdata[i] = { x: 2.8 + Math.random() * 0.3, y: 1.52 + Math.random() * 0.08, z: -0.3 + Math.random() * 0.7 };
+      gdata[i] = { x: 2.7 + Math.random() * 0.4, y: 1.5 + Math.random() * 0.1, z: 0.0 + Math.random() * 0.6 };
     }
     for (let i = 0; i < GN; i++) gspawn(i);
     gGeo.setAttribute("position", new THREE.BufferAttribute(gpos, 3));
     const goldStream = new THREE.Points(
       gGeo,
       new THREE.PointsMaterial({
-        size: 0.12,
+        size: 0.13,
         map: sprite,
         color: 0xffb23e,
         transparent: true,
@@ -556,10 +568,13 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
     function updateGold(dt: number) {
       for (let i = 0; i < GN; i++) {
         const d = gdata[i];
-        d.x += (3.62 - d.x) * dt * 1.6;
-        d.z += (0.55 - d.z) * dt * 1.6;
-        d.y += (1.04 - d.y) * dt * 1.6 - dt * 0.18;
-        if (Math.abs(d.x - 3.62) < 0.12 && d.y < 1.12) gspawn(i);
+        d.x += (goldTarget.x - d.x) * dt * 2.1;
+        d.z += (goldTarget.z - d.z) * dt * 2.1;
+        d.y += (goldTarget.y + 0.05 - d.y) * dt * 2.1 - dt * 0.05;
+        const dx = d.x - goldTarget.x;
+        const dy = d.y - goldTarget.y;
+        const dz = d.z - goldTarget.z;
+        if (dx * dx + dy * dy + dz * dz < 0.025) gspawn(i);
         const o = i * 3;
         gpos[o] = d.x;
         gpos[o + 1] = d.y;
@@ -704,6 +719,7 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
         updateParticles(dt);
         updateWater(dt);
         updateFeed(dt);
+        (collector.userData.pan as THREE.Mesh).getWorldPosition(goldTarget);
         updateGold(dt);
         // tiempo acelerado + oro acumulado
         simDays += dt * TIME_SCALE;
