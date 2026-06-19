@@ -32,7 +32,7 @@ export default function Models() {
                   <MessageCircle />
                   Consultar
                 </a>
-                <a className="btn btn-ghost-ink btn-sm" target="_blank" href={m.plano}>
+                <a className="btn btn-ghost-ink btn-sm" target="_blank" rel="noopener" href={m.plano}>
                   <Download />
                   Descargar plano
                 </a>
@@ -41,7 +41,7 @@ export default function Models() {
           ))}
         </Reveal>
         <Reveal style={{ textAlign: "center", marginTop: 34 }}>
-          <a className="btn btn-ghost-ink" target="_blank" href="/planos/xl-100.pdf">
+          <a className="btn btn-ghost-ink" target="_blank" rel="noopener" href="/planos/xl-100.pdf">
             <FileDown />
             Descargar ficha técnica completa
           </a>

@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ChangeEvent } from "react";
+import dynamic from "next/dynamic";
 import { Gauge, Gem, Clock, Percent, Cpu, MessageCircle, FileDown } from "lucide-react";
-import Viewer3D from "./Viewer3D";
 import Reveal from "./Reveal";
 import {
   gramsPerDay,
@@ -14,6 +14,16 @@ import {
   GRAMS_PER_OZT,
 } from "@/lib/calc";
 import { wa } from "@/lib/whatsapp";
+
+// El visor 3D (Three.js, ~140 kB) se carga sólo en cliente y bajo demanda → no infla el JS inicial.
+const Viewer3D = dynamic(() => import("./Viewer3D"), {
+  ssr: false,
+  loading: () => (
+    <div className="viewer3d-stage" style={{ display: "grid", placeItems: "center" }}>
+      <span style={{ color: "rgba(255,255,255,.5)", fontSize: ".9rem" }}>Cargando vista 3D…</span>
+    </div>
+  ),
+});
 
 interface GoldPrice {
   usdPerOz: number;
@@ -48,10 +58,28 @@ function useGoldPrice() {
 }
 
 export default function RecoverySimulator() {
-  const [capacity, setCapacity] = useState(10);
-  const [grade, setGrade] = useState(8);
-  const [hours, setHours] = useState(12);
+  // Límites de QA por campo: evita valores infinitos, negativos o absurdos.
+  const LIM = {
+    capacity: { min: 0, max: 500, def: 10 },
+    grade: { min: 0, max: 250, def: 8 },
+    hours: { min: 1, max: 24, def: 12 },
+  } as const;
+  type Lim = { min: number; max: number; def: number };
+  const parseClamp = (s: string, L: Lim) => {
+    const n = Number(s);
+    if (s.trim() === "" || !Number.isFinite(n)) return L.def;
+    return Math.min(Math.max(n, L.min), L.max);
+  };
+
+  const [capacityStr, setCapacityStr] = useState("10");
+  const [gradeStr, setGradeStr] = useState("8");
+  const [hoursStr, setHoursStr] = useState("12");
   const [recovery, setRecovery] = useState(91);
+
+  // Valores ya validados/acotados que alimentan el cálculo y el 3D.
+  const capacity = parseClamp(capacityStr, LIM.capacity);
+  const grade = parseClamp(gradeStr, LIM.grade);
+  const hours = parseClamp(hoursStr, LIM.hours);
 
   const price = useGoldPrice();
   const usdPerOz = price ? price.usdPerOz : 2600;
@@ -76,8 +104,20 @@ export default function RecoverySimulator() {
     `y me recomiendan la mesa ${reco.code}${reco.needsMultiple ? ` (x${reco.unitsNeeded})` : ""}. ` +
     `¿Me ayudan?`;
 
-  const num = (setter: (n: number) => void) => (e: ChangeEvent<HTMLInputElement>) =>
-    setter(Math.max(0, Number(e.target.value) || 0));
+  // Permite escribir libre (vacío/parcial/decimales) pero bloquea no-numérico,
+  // Infinity/NaN, negativos y sobre el máximo; al salir del campo normaliza al valor válido.
+  const onField =
+    (setStr: (s: string) => void, L: Lim) => (e: ChangeEvent<HTMLInputElement>) => {
+      const s = e.target.value;
+      if (s === "") return setStr("");
+      const n = Number(s);
+      if (!Number.isFinite(n)) return; // ignora Infinity / NaN / texto
+      if (n > L.max) return setStr(String(L.max));
+      if (n < 0) return setStr("0");
+      setStr(s);
+    };
+  const onFieldBlur = (setStr: (s: string) => void, str: string, L: Lim) => () =>
+    setStr(String(parseClamp(str, L)));
 
   return (
     <section className="section sim" id="simulador">
@@ -117,7 +157,16 @@ export default function RecoverySimulator() {
                     <Gauge /> Capacidad
                   </span>
                   <div className="sim-input">
-                    <input type="number" min={0} step={1} value={capacity} onChange={num(setCapacity)} />
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      min={LIM.capacity.min}
+                      max={LIM.capacity.max}
+                      step={1}
+                      value={capacityStr}
+                      onChange={onField(setCapacityStr, LIM.capacity)}
+                      onBlur={onFieldBlur(setCapacityStr, capacityStr, LIM.capacity)}
+                    />
                     <em>tn/día</em>
                   </div>
                 </label>
@@ -126,7 +175,16 @@ export default function RecoverySimulator() {
                     <Gem /> Ley de oro
                   </span>
                   <div className="sim-input">
-                    <input type="number" min={0} step={0.1} value={grade} onChange={num(setGrade)} />
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      min={LIM.grade.min}
+                      max={LIM.grade.max}
+                      step={0.1}
+                      value={gradeStr}
+                      onChange={onField(setGradeStr, LIM.grade)}
+                      onBlur={onFieldBlur(setGradeStr, gradeStr, LIM.grade)}
+                    />
                     <em>g/t</em>
                   </div>
                 </label>
@@ -135,7 +193,16 @@ export default function RecoverySimulator() {
                     <Clock /> Operación
                   </span>
                   <div className="sim-input">
-                    <input type="number" min={1} max={24} step={1} value={hours} onChange={num(setHours)} />
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      min={LIM.hours.min}
+                      max={LIM.hours.max}
+                      step={1}
+                      value={hoursStr}
+                      onChange={onField(setHoursStr, LIM.hours)}
+                      onBlur={onFieldBlur(setHoursStr, hoursStr, LIM.hours)}
+                    />
                     <em>h/día</em>
                   </div>
                 </label>
@@ -185,7 +252,7 @@ export default function RecoverySimulator() {
                   <MessageCircle />
                   Solicitar esta cotización
                 </a>
-                <a className="btn btn-ghost" href={reco.plano} target="_blank">
+                <a className="btn btn-ghost" href={reco.plano} target="_blank" rel="noopener">
                   <FileDown />
                   Ver plano {reco.code}
                 </a>

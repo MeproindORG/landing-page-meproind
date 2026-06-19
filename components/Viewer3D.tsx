@@ -766,10 +766,21 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
       ol.visible = load > 0.05;
     }
 
+    // Pausa el render cuando el visor sale de pantalla (ahorra CPU/GPU/batería).
+    let onScreen = true;
+    const io = new IntersectionObserver(
+      (entries) => {
+        onScreen = entries[0]?.isIntersecting ?? true;
+      },
+      { threshold: 0.01 },
+    );
+    io.observe(stage);
+
     let raf = 0;
     let prevCycle = 0;
     function loop() {
       raf = requestAnimationFrame(loop);
+      if (!onScreen) return; // fuera de pantalla → no renderiza
       const dt = Math.min(clock.getDelta(), 0.05);
       const t = clock.elapsedTime;
       // operario A: ciclo de paleo (carga la tolva); operario B: recoge el concentrado
@@ -815,6 +826,7 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
 
     return () => {
       cancelAnimationFrame(raf);
+      io.disconnect();
       window.removeEventListener("resize", onResize);
       controls.dispose();
       controlsRef.current = null;
