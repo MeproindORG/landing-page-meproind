@@ -263,6 +263,7 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
 
     // ---- tolva de alimentación (estática) ----
     const matOre = new THREE.MeshStandardMaterial({ color: 0x8a6a3c, roughness: 0.85 });
+    const feedRig = new THREE.Group(); // tolva + postes: vibran junto con la mesa
     const hopper = new THREE.Group();
     hopper.position.set(-2.55, 2.12, 0.9);
     const funnel = new THREE.Mesh(
@@ -278,7 +279,7 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
     const oreHeap = new THREE.Mesh(new THREE.ConeGeometry(0.4, 0.22, 18), matOre);
     oreHeap.position.y = 0.16;
     hopper.add(oreHeap);
-    scene.add(hopper);
+    feedRig.add(hopper);
     [
       [-2.95, 0.9],
       [-2.15, 0.9],
@@ -286,8 +287,9 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
       const postH = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 2.05, 10), matSteel);
       postH.position.set(p[0], 1.02, p[1]);
       postH.castShadow = true;
-      scene.add(postH);
+      feedRig.add(postH);
     });
+    scene.add(feedRig);
 
     // ---- trabajadores estilizados que interactúan con la mesa ----
     const skinMat = new THREE.MeshStandardMaterial({ color: 0xd8a87a, roughness: 0.7 });
@@ -779,6 +781,7 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
         theta += dt * 28;
         fwGroup.rotation.z = theta;
         deckShake.position.x = -Math.sin(theta) * 0.1;
+        feedRig.position.x = deckShake.position.x; // la tolva vibra con la mesa
         updateParticles(dt);
         updateWater(dt);
         updateFeed(dt);
