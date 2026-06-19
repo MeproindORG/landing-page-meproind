@@ -264,7 +264,7 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
     // ---- tolva de alimentación (estática) ----
     const matOre = new THREE.MeshStandardMaterial({ color: 0x8a6a3c, roughness: 0.85 });
     const hopper = new THREE.Group();
-    hopper.position.set(-2.55, 2.4, 0.9);
+    hopper.position.set(-2.55, 2.12, 0.9);
     const funnel = new THREE.Mesh(
       new THREE.CylinderGeometry(0.52, 0.15, 0.6, 22, 1, true),
       new THREE.MeshStandardMaterial({ color: 0x6c6c72, roughness: 0.4, metalness: 0.7, side: THREE.DoubleSide }),
@@ -283,85 +283,143 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
       [-2.95, 0.9],
       [-2.15, 0.9],
     ].forEach((p) => {
-      const postH = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 2.4, 10), matSteel);
-      postH.position.set(p[0], 1.2, p[1]);
+      const postH = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 2.05, 10), matSteel);
+      postH.position.set(p[0], 1.02, p[1]);
       postH.castShadow = true;
       scene.add(postH);
     });
 
-    // ---- operario estilizado (con casco) alimentando la mesa ----
-    const buildOperator = () => {
+    // ---- trabajadores estilizados que interactúan con la mesa ----
+    const skinMat = new THREE.MeshStandardMaterial({ color: 0xd8a87a, roughness: 0.7 });
+    const bootMat = new THREE.MeshStandardMaterial({ color: 0x171717, roughness: 0.6 });
+    const handleMat = new THREE.MeshStandardMaterial({ color: 0x9a7b4a, roughness: 0.7 });
+    function buildWorker(clothColor: number, vestColor: number) {
+      const cloth = new THREE.MeshStandardMaterial({ color: clothColor, roughness: 0.75 });
+      const vest = new THREE.MeshStandardMaterial({ color: vestColor, roughness: 0.5, metalness: 0.1 });
       const g = new THREE.Group();
-      const skin = new THREE.MeshStandardMaterial({ color: 0xd8a87a, roughness: 0.7 });
-      const cloth = new THREE.MeshStandardMaterial({ color: 0x2f4d6e, roughness: 0.75 });
-      const vest = new THREE.MeshStandardMaterial({ color: 0xf2a800, roughness: 0.5, metalness: 0.1 });
-      const boot = new THREE.MeshStandardMaterial({ color: 0x171717, roughness: 0.6 });
       [-0.11, 0.11].forEach((x) => {
         const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.08, 0.7, 12), cloth);
         leg.position.set(x, 0.37, 0);
         leg.castShadow = true;
         g.add(leg);
-        const b = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.1, 0.27), boot);
+        const b = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.1, 0.27), bootMat);
         b.position.set(x, 0.05, 0.05);
         b.castShadow = true;
         g.add(b);
       });
+      // tronco articulado (pivote en la cadera) — permite agacharse
+      const hip = new THREE.Group();
+      hip.position.set(0, 0.72, 0);
+      g.add(hip);
       const torso = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.56, 0.24), cloth);
-      torso.position.set(0, 1.0, 0);
+      torso.position.set(0, 0.28, 0);
       torso.castShadow = true;
-      g.add(torso);
+      hip.add(torso);
       const vestMesh = new THREE.Mesh(new THREE.BoxGeometry(0.43, 0.42, 0.26), vest);
-      vestMesh.position.set(0, 1.0, 0);
+      vestMesh.position.set(0, 0.28, 0);
       vestMesh.castShadow = true;
-      g.add(vestMesh);
-      const head = new THREE.Mesh(new THREE.SphereGeometry(0.13, 20, 16), skin);
-      head.position.set(0, 1.42, 0);
+      hip.add(vestMesh);
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.13, 20, 16), skinMat);
+      head.position.set(0, 0.7, 0);
       head.castShadow = true;
-      g.add(head);
+      hip.add(head);
       const hatBrim = new THREE.Mesh(new THREE.CylinderGeometry(0.185, 0.185, 0.03, 22), matY);
-      hatBrim.position.set(0, 1.5, 0.03);
-      g.add(hatBrim);
+      hatBrim.position.set(0, 0.78, 0.04);
+      hip.add(hatBrim);
       const hatDome = new THREE.Mesh(
         new THREE.SphereGeometry(0.15, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2),
         matY,
       );
-      hatDome.position.set(0, 1.5, 0);
+      hatDome.position.set(0, 0.78, 0);
       hatDome.castShadow = true;
-      g.add(hatDome);
-      const lArm = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.055, 0.52, 12), cloth);
-      lArm.position.set(-0.27, 1.0, 0);
-      lArm.rotation.z = 0.14;
+      hip.add(hatDome);
+      const lShoulder = new THREE.Group();
+      lShoulder.position.set(-0.24, 0.52, 0.05);
+      hip.add(lShoulder);
+      const lArm = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.055, 0.5, 12), cloth);
+      lArm.position.set(0, -0.2, 0.04);
       lArm.castShadow = true;
-      g.add(lArm);
-      // brazo derecho articulado (palea hacia la tolva)
-      const armPivot = new THREE.Group();
-      armPivot.position.set(0.25, 1.24, 0.04);
-      g.add(armPivot);
-      const rArm = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.055, 0.52, 12), cloth);
-      rArm.position.set(0, -0.18, 0.12);
-      rArm.rotation.x = -0.6;
+      lShoulder.add(lArm);
+      const rShoulder = new THREE.Group();
+      rShoulder.position.set(0.24, 0.52, 0.05);
+      hip.add(rShoulder);
+      const rArm = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.055, 0.5, 12), cloth);
+      rArm.position.set(0, -0.2, 0.04);
       rArm.castShadow = true;
-      armPivot.add(rArm);
-      const shovel = new THREE.Group();
-      shovel.position.set(0, -0.36, 0.26);
-      const sHandle = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.022, 0.022, 0.62, 8),
-        new THREE.MeshStandardMaterial({ color: 0x9a7b4a, roughness: 0.7 }),
-      );
-      sHandle.rotation.x = -0.6;
-      shovel.add(sHandle);
-      const blade = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.02, 0.2), matSteel);
-      blade.position.set(0, -0.26, 0.2);
-      blade.castShadow = true;
-      shovel.add(blade);
-      armPivot.add(shovel);
-      g.userData.armPivot = armPivot;
+      rShoulder.add(rArm);
+      const hand = new THREE.Group();
+      hand.position.set(0, -0.42, 0.06);
+      rShoulder.add(hand);
+      g.userData = { hip, lShoulder, rShoulder, hand };
       return g;
-    };
-    const operator = buildOperator();
-    operator.position.set(-3.55, 0, 1.35);
-    operator.rotation.y = -0.5;
-    scene.add(operator);
+    }
+
+    // Operario A — agarra mineral del montículo y lo echa a la tolva
+    const feeder = buildWorker(0x2f4d6e, 0xf2a800);
+    feeder.position.set(-3.4, 0, 1.95);
+    feeder.rotation.y = 2.4; // mira hacia la tolva
+    feeder.scale.setScalar(1.12);
+    const shovel = new THREE.Group();
+    const sHandle = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.6, 8), handleMat);
+    sHandle.position.set(0, -0.18, 0.12);
+    sHandle.rotation.x = -0.5;
+    sHandle.castShadow = true;
+    shovel.add(sHandle);
+    const bladePivot = new THREE.Group();
+    bladePivot.position.set(0, -0.4, 0.32);
+    shovel.add(bladePivot);
+    const blade = new THREE.Mesh(new THREE.BoxGeometry(0.21, 0.02, 0.24), matSteel);
+    blade.castShadow = true;
+    bladePivot.add(blade);
+    const bladeLip = new THREE.Mesh(new THREE.BoxGeometry(0.21, 0.07, 0.02), matSteel);
+    bladeLip.position.set(0, 0.025, 0.12);
+    bladePivot.add(bladeLip);
+    const oreLoad = new THREE.Mesh(new THREE.SphereGeometry(0.1, 12, 8), matOre);
+    oreLoad.scale.set(1, 0.45, 1);
+    oreLoad.position.set(0, 0.05, 0);
+    bladePivot.add(oreLoad);
+    (feeder.userData.hand as THREE.Group).add(shovel);
+    feeder.userData.bladePivot = bladePivot;
+    feeder.userData.oreLoad = oreLoad;
+    scene.add(feeder);
+
+    // montículo de mineral (fuente) + sacos junto al operario
+    const orePile = new THREE.Mesh(new THREE.ConeGeometry(0.42, 0.3, 18), matOre);
+    orePile.position.set(-2.95, 0.13, 1.45);
+    orePile.castShadow = true;
+    orePile.receiveShadow = true;
+    scene.add(orePile);
+    (
+      [
+        [-4.2, 0.6],
+        [-4.28, 1.18],
+      ] as const
+    ).forEach((s) => {
+      const sack = new THREE.Mesh(
+        new THREE.SphereGeometry(0.26, 12, 10),
+        new THREE.MeshStandardMaterial({ color: 0x6f5f39, roughness: 0.95 }),
+      );
+      sack.scale.set(1, 0.78, 0.82);
+      sack.position.set(s[0], 0.2, s[1]);
+      sack.castShadow = true;
+      scene.add(sack);
+    });
+
+    // Operario B — recoge el concentrado de oro en una batea
+    const collector = buildWorker(0x3b3f46, 0xf2a800);
+    collector.position.set(3.95, 0, 0.55);
+    collector.rotation.y = -Math.PI / 2; // mira hacia -x (la mesa)
+    collector.scale.setScalar(1.12);
+    const pan = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.18, 0.14, 0.07, 22, 1, true),
+      new THREE.MeshStandardMaterial({ color: 0x4a3a22, roughness: 0.6, metalness: 0.35, side: THREE.DoubleSide }),
+    );
+    pan.castShadow = true;
+    (collector.userData.hand as THREE.Group).add(pan);
+    (collector.userData.rShoulder as THREE.Group).rotation.x = -1.45;
+    (collector.userData.lShoulder as THREE.Group).rotation.x = -1.2;
+    collector.userData.pan = pan;
+    scene.add(collector);
 
     // ---- partículas de mineral en la mesa (oro vs relave) ----
     const psc = document.createElement("canvas");
@@ -471,6 +529,45 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
     );
     scene.add(feedPts);
 
+    // ---- concentrado de oro que sale de la mesa y cae a la batea ----
+    const GN = 46;
+    const gGeo = new THREE.BufferGeometry();
+    const gpos = new Float32Array(GN * 3);
+    const gdata: { x: number; y: number; z: number }[] = [];
+    function gspawn(i: number) {
+      gdata[i] = { x: 2.8 + Math.random() * 0.3, y: 1.52 + Math.random() * 0.08, z: -0.3 + Math.random() * 0.7 };
+    }
+    for (let i = 0; i < GN; i++) gspawn(i);
+    gGeo.setAttribute("position", new THREE.BufferAttribute(gpos, 3));
+    const goldStream = new THREE.Points(
+      gGeo,
+      new THREE.PointsMaterial({
+        size: 0.12,
+        map: sprite,
+        color: 0xffb23e,
+        transparent: true,
+        opacity: 1,
+        alphaTest: 0.05,
+        depthWrite: false,
+        sizeAttenuation: true,
+      }),
+    );
+    scene.add(goldStream);
+    function updateGold(dt: number) {
+      for (let i = 0; i < GN; i++) {
+        const d = gdata[i];
+        d.x += (3.62 - d.x) * dt * 1.6;
+        d.z += (0.55 - d.z) * dt * 1.6;
+        d.y += (1.04 - d.y) * dt * 1.6 - dt * 0.18;
+        if (Math.abs(d.x - 3.62) < 0.12 && d.y < 1.12) gspawn(i);
+        const o = i * 3;
+        gpos[o] = d.x;
+        gpos[o + 1] = d.y;
+        gpos[o + 2] = d.z;
+      }
+      gGeo.attributes.position.needsUpdate = true;
+    }
+
     function updateFeed(dt: number) {
       for (let i = 0; i < FN; i++) {
         const d = fdata[i];
@@ -557,15 +654,48 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
     const mid = new THREE.Vector3();
     const dir = new THREE.Vector3();
     const xAxis = new THREE.Vector3(1, 0, 0);
+
+    // Ciclo del operario que alimenta: agacha al montículo → carga → sube → vuelca en la tolva.
+    // Keyframes: c (fase 0..1), hip (inclinación), sh (hombro: − = al frente), tip (vaciar pala), load (mineral en pala).
+    const FEED_CYCLE = 3.6;
+    const fK = [
+      { c: 0.0, hip: 0.55, sh: -0.55, tip: 0.0, load: 0.0 },
+      { c: 0.16, hip: 0.55, sh: -0.62, tip: 0.0, load: 1.0 },
+      { c: 0.42, hip: 0.12, sh: -1.15, tip: 0.05, load: 1.0 },
+      { c: 0.6, hip: -0.04, sh: -1.95, tip: 0.15, load: 1.0 },
+      { c: 0.72, hip: -0.04, sh: -2.05, tip: 1.3, load: 0.0 },
+      { c: 0.86, hip: 0.26, sh: -0.7, tip: 0.2, load: 0.0 },
+      { c: 1.0, hip: 0.55, sh: -0.55, tip: 0.0, load: 0.0 },
+    ];
+    function animateFeeder(time: number) {
+      const c = (time % FEED_CYCLE) / FEED_CYCLE;
+      let i = 0;
+      while (i < fK.length - 1 && c > fK[i + 1].c) i++;
+      const k0 = fK[i];
+      const k1 = fK[Math.min(i + 1, fK.length - 1)];
+      const span = Math.max(k1.c - k0.c, 1e-4);
+      const lt = (c - k0.c) / span;
+      const e = lt * lt * (3 - 2 * lt); // smoothstep
+      const lerp = (a: number, b: number) => a + (b - a) * e;
+      (feeder.userData.hip as THREE.Group).rotation.x = lerp(k0.hip, k1.hip);
+      (feeder.userData.rShoulder as THREE.Group).rotation.x = lerp(k0.sh, k1.sh);
+      (feeder.userData.bladePivot as THREE.Group).rotation.x = lerp(k0.tip, k1.tip);
+      const load = lerp(k0.load, k1.load);
+      const ol = feeder.userData.oreLoad as THREE.Mesh;
+      const s = Math.max(load, 0.001);
+      ol.scale.set(s, s * 0.45, s);
+      ol.visible = load > 0.05;
+    }
+
     let raf = 0;
     function loop() {
       raf = requestAnimationFrame(loop);
       const dt = Math.min(clock.getDelta(), 0.05);
       const t = clock.elapsedTime;
-      // operario paleando (siempre, sutil)
-      const armPivot = operator.userData.armPivot as THREE.Group;
-      armPivot.rotation.x = -0.35 + Math.sin(t * 2.4) * 0.5;
-      operator.position.y = Math.sin(t * 2.4 + 1) * 0.015;
+      // operario A: ciclo de paleo (carga la tolva); operario B: recoge el concentrado
+      animateFeeder(t);
+      (collector.userData.pan as THREE.Mesh).rotation.z = Math.sin(t * 1.6) * 0.12;
+      (collector.userData.hip as THREE.Group).rotation.x = 0.05 + Math.sin(t * 1.6) * 0.03;
 
       if (simRef.current) {
         theta += dt * 28;
@@ -574,6 +704,7 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
         updateParticles(dt);
         updateWater(dt);
         updateFeed(dt);
+        updateGold(dt);
         // tiempo acelerado + oro acumulado
         simDays += dt * TIME_SCALE;
         if (simDays >= 365) simDays = 0;
