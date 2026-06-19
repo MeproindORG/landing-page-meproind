@@ -1,33 +1,77 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { RotateCw } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { RotateCw, Clock, Coins } from "lucide-react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
-import Reveal from "./Reveal";
+import { fmtMass, fmtUsd } from "@/lib/calc";
 
-/**
- * Modelo procedural de la mesa gravimétrica con simulación de separación.
- * Motor coaxial (volante + biela) que reciproca el deck; partículas de oro
- * (concentrado) y relave (descarga); gotas de agua. OrbitControls para orbitar.
- */
-export default function Viewer3D() {
+interface Viewer3DProps {
+  /** ley de oro (g/t) — controla la proporción de partículas doradas */
+  grade: number;
+  /** oro recuperado por día (g) — alimenta el contador de tiempo acelerado */
+  gramsPerDay: number;
+  /** US$ por gramo de oro (precio en vivo) — para el valor del contador */
+  usdPerGram: number;
+}
+
+/** días simulados por segundo real (tiempo acelerado) */
+const TIME_SCALE = 2.6;
+
+function goldFractionFromGrade(grade: number): number {
+  return Math.min(Math.max(0.18 + grade * 0.025, 0.2), 0.65);
+}
+
+export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DProps) {
   const stageRef = useRef<HTMLDivElement>(null);
-  const playRef = useRef<HTMLButtonElement>(null);
-  const spinRef = useRef<HTMLButtonElement>(null);
+  const controlsRef = useRef<OrbitControls | null>(null);
+  const simRef = useRef(true);
+  const paramsRef = useRef({
+    goldFraction: goldFractionFromGrade(grade),
+    gramsPerDay,
+    usdPerGram,
+  });
+
+  const [simOn, setSimOn] = useState(true);
+  const [spinOn, setSpinOn] = useState(true);
+  const [hud, setHud] = useState({ days: 0, grams: 0, usd: 0 });
+
+  // Mantener los parámetros vivos para que el loop lea siempre el valor actual.
+  useEffect(() => {
+    paramsRef.current = {
+      goldFraction: goldFractionFromGrade(grade),
+      gramsPerDay,
+      usdPerGram,
+    };
+  }, [grade, gramsPerDay, usdPerGram]);
+
+  const toggleSim = () => {
+    simRef.current = !simRef.current;
+    setSimOn(simRef.current);
+  };
+  const toggleSpin = () => {
+    const c = controlsRef.current;
+    if (!c) return;
+    c.autoRotate = !c.autoRotate;
+    setSpinOn(c.autoRotate);
+  };
 
   useEffect(() => {
     const stage = stageRef.current;
     if (!stage) return;
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion) {
+      simRef.current = false;
+      setSimOn(false);
+    }
     const W = () => stage.clientWidth || 760;
     const H = () => stage.clientHeight || 475;
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(40, W() / H(), 0.1, 100);
-    camera.position.set(7.2, 4.6, 7.8);
+    camera.position.set(7.6, 4.8, 8.2);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -52,11 +96,11 @@ export default function Viewer3D() {
     key.castShadow = true;
     key.shadow.mapSize.set(2048, 2048);
     key.shadow.camera.near = 1;
-    key.shadow.camera.far = 45;
-    key.shadow.camera.left = -10;
-    key.shadow.camera.right = 10;
-    key.shadow.camera.top = 10;
-    key.shadow.camera.bottom = -10;
+    key.shadow.camera.far = 50;
+    key.shadow.camera.left = -12;
+    key.shadow.camera.right = 12;
+    key.shadow.camera.top = 12;
+    key.shadow.camera.bottom = -12;
     key.shadow.bias = -0.0004;
     scene.add(key);
     const rim = new THREE.DirectionalLight(0xfc8f33, 0.7);
@@ -150,7 +194,7 @@ export default function Viewer3D() {
     scene.add(rod);
     scene.add(base);
 
-    // ---- deck vibrante (cuerpo negro + ranuras finas + bordes blancos) ----
+    // ---- deck vibrante ----
     const deckPivot = new THREE.Group();
     deckPivot.position.set(0, 1.5, 0);
     deckPivot.rotation.x = THREE.MathUtils.degToRad(-4.0);
@@ -217,7 +261,109 @@ export default function Viewer3D() {
     tailTrough.castShadow = true;
     scene.add(tailTrough);
 
-    // ---- partículas (sprite redondo suave) ----
+    // ---- tolva de alimentación (estática) ----
+    const matOre = new THREE.MeshStandardMaterial({ color: 0x8a6a3c, roughness: 0.85 });
+    const hopper = new THREE.Group();
+    hopper.position.set(-2.55, 2.4, 0.9);
+    const funnel = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.52, 0.15, 0.6, 22, 1, true),
+      new THREE.MeshStandardMaterial({ color: 0x6c6c72, roughness: 0.4, metalness: 0.7, side: THREE.DoubleSide }),
+    );
+    funnel.castShadow = true;
+    hopper.add(funnel);
+    const hopRim = new THREE.Mesh(new THREE.TorusGeometry(0.52, 0.03, 8, 26), matSteel);
+    hopRim.rotation.x = Math.PI / 2;
+    hopRim.position.y = 0.3;
+    hopper.add(hopRim);
+    const oreHeap = new THREE.Mesh(new THREE.ConeGeometry(0.4, 0.22, 18), matOre);
+    oreHeap.position.y = 0.16;
+    hopper.add(oreHeap);
+    scene.add(hopper);
+    [
+      [-2.95, 0.9],
+      [-2.15, 0.9],
+    ].forEach((p) => {
+      const postH = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 2.4, 10), matSteel);
+      postH.position.set(p[0], 1.2, p[1]);
+      postH.castShadow = true;
+      scene.add(postH);
+    });
+
+    // ---- operario estilizado (con casco) alimentando la mesa ----
+    const buildOperator = () => {
+      const g = new THREE.Group();
+      const skin = new THREE.MeshStandardMaterial({ color: 0xd8a87a, roughness: 0.7 });
+      const cloth = new THREE.MeshStandardMaterial({ color: 0x2f4d6e, roughness: 0.75 });
+      const vest = new THREE.MeshStandardMaterial({ color: 0xf2a800, roughness: 0.5, metalness: 0.1 });
+      const boot = new THREE.MeshStandardMaterial({ color: 0x171717, roughness: 0.6 });
+      [-0.11, 0.11].forEach((x) => {
+        const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.08, 0.7, 12), cloth);
+        leg.position.set(x, 0.37, 0);
+        leg.castShadow = true;
+        g.add(leg);
+        const b = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.1, 0.27), boot);
+        b.position.set(x, 0.05, 0.05);
+        b.castShadow = true;
+        g.add(b);
+      });
+      const torso = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.56, 0.24), cloth);
+      torso.position.set(0, 1.0, 0);
+      torso.castShadow = true;
+      g.add(torso);
+      const vestMesh = new THREE.Mesh(new THREE.BoxGeometry(0.43, 0.42, 0.26), vest);
+      vestMesh.position.set(0, 1.0, 0);
+      vestMesh.castShadow = true;
+      g.add(vestMesh);
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.13, 20, 16), skin);
+      head.position.set(0, 1.42, 0);
+      head.castShadow = true;
+      g.add(head);
+      const hatBrim = new THREE.Mesh(new THREE.CylinderGeometry(0.185, 0.185, 0.03, 22), matY);
+      hatBrim.position.set(0, 1.5, 0.03);
+      g.add(hatBrim);
+      const hatDome = new THREE.Mesh(
+        new THREE.SphereGeometry(0.15, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2),
+        matY,
+      );
+      hatDome.position.set(0, 1.5, 0);
+      hatDome.castShadow = true;
+      g.add(hatDome);
+      const lArm = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.055, 0.52, 12), cloth);
+      lArm.position.set(-0.27, 1.0, 0);
+      lArm.rotation.z = 0.14;
+      lArm.castShadow = true;
+      g.add(lArm);
+      // brazo derecho articulado (palea hacia la tolva)
+      const armPivot = new THREE.Group();
+      armPivot.position.set(0.25, 1.24, 0.04);
+      g.add(armPivot);
+      const rArm = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.055, 0.52, 12), cloth);
+      rArm.position.set(0, -0.18, 0.12);
+      rArm.rotation.x = -0.6;
+      rArm.castShadow = true;
+      armPivot.add(rArm);
+      const shovel = new THREE.Group();
+      shovel.position.set(0, -0.36, 0.26);
+      const sHandle = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.022, 0.022, 0.62, 8),
+        new THREE.MeshStandardMaterial({ color: 0x9a7b4a, roughness: 0.7 }),
+      );
+      sHandle.rotation.x = -0.6;
+      shovel.add(sHandle);
+      const blade = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.02, 0.2), matSteel);
+      blade.position.set(0, -0.26, 0.2);
+      blade.castShadow = true;
+      shovel.add(blade);
+      armPivot.add(shovel);
+      g.userData.armPivot = armPivot;
+      return g;
+    };
+    const operator = buildOperator();
+    operator.position.set(-3.55, 0, 1.35);
+    operator.rotation.y = -0.5;
+    scene.add(operator);
+
+    // ---- partículas de mineral en la mesa (oro vs relave) ----
     const psc = document.createElement("canvas");
     psc.width = psc.height = 64;
     const pcx = psc.getContext("2d")!;
@@ -237,7 +383,11 @@ export default function Viewer3D() {
     const GOLD = new THREE.Color(0xffab3d);
     const TAIL = new THREE.Color(0xe6e6ec);
     function spawn(i: number) {
-      data[i] = { gold: Math.random() < 0.46, x: -2.35 + Math.random() * 0.5, z: 0.35 + Math.random() * 0.75 };
+      data[i] = {
+        gold: Math.random() < paramsRef.current.goldFraction,
+        x: -2.35 + Math.random() * 0.5,
+        z: 0.35 + Math.random() * 0.75,
+      };
     }
     function setCol(i: number) {
       const c = data[i].gold ? GOLD : TAIL;
@@ -266,6 +416,7 @@ export default function Viewer3D() {
     );
     deckShake.add(points);
 
+    // ---- gotas de agua ----
     const WN = 380;
     const wGeo = new THREE.BufferGeometry();
     const wpos = new Float32Array(WN * 3);
@@ -290,6 +441,49 @@ export default function Viewer3D() {
     );
     deckShake.add(waterPts);
 
+    // ---- chorro de mineral de la tolva hacia la mesa ----
+    const FN = 70;
+    const fGeo = new THREE.BufferGeometry();
+    const fpos = new Float32Array(FN * 3);
+    const fdata: { x: number; y: number; z: number; v: number }[] = [];
+    function fspawn(i: number) {
+      fdata[i] = {
+        x: -2.55 + (Math.random() - 0.5) * 0.18,
+        y: 2.0 + Math.random() * 0.18,
+        z: 0.9 + (Math.random() - 0.5) * 0.18,
+        v: 0,
+      };
+    }
+    for (let i = 0; i < FN; i++) fspawn(i);
+    fGeo.setAttribute("position", new THREE.BufferAttribute(fpos, 3));
+    const feedPts = new THREE.Points(
+      fGeo,
+      new THREE.PointsMaterial({
+        size: 0.1,
+        map: sprite,
+        color: 0xc79a5b,
+        transparent: true,
+        opacity: 0.96,
+        alphaTest: 0.05,
+        depthWrite: false,
+        sizeAttenuation: true,
+      }),
+    );
+    scene.add(feedPts);
+
+    function updateFeed(dt: number) {
+      for (let i = 0; i < FN; i++) {
+        const d = fdata[i];
+        d.v += dt * 3.2;
+        d.y -= d.v * dt;
+        if (d.y < 1.72) fspawn(i);
+        const o = i * 3;
+        fpos[o] = d.x;
+        fpos[o + 1] = d.y;
+        fpos[o + 2] = d.z;
+      }
+      fGeo.attributes.position.needsUpdate = true;
+    }
     function updateWater(dt: number) {
       for (let i = 0; i < WN; i++) {
         const d = wdata[i];
@@ -340,30 +534,12 @@ export default function Viewer3D() {
     controls.autoRotate = !reduceMotion;
     controls.autoRotateSpeed = 0.9;
     controls.minDistance = 5.5;
-    controls.maxDistance = 17;
+    controls.maxDistance = 18;
     controls.maxPolarAngle = Math.PI / 2.04;
-    controls.target.set(0, 1.4, 0);
+    controls.target.set(-0.2, 1.4, 0);
     controls.update();
-
-    let sim = !reduceMotion;
-    const pBtn = playRef.current;
-    const sBtn = spinRef.current;
-    const onPlay = () => {
-      sim = !sim;
-      if (pBtn) pBtn.textContent = sim ? "Pausar simulación" : "Iniciar simulación";
-    };
-    const onSpin = () => {
-      controls.autoRotate = !controls.autoRotate;
-      if (sBtn) sBtn.textContent = controls.autoRotate ? "Detener giro" : "Girar solo";
-    };
-    if (pBtn) {
-      pBtn.textContent = sim ? "Pausar simulación" : "Iniciar simulación";
-      pBtn.addEventListener("click", onPlay);
-    }
-    if (sBtn) {
-      sBtn.textContent = controls.autoRotate ? "Detener giro" : "Girar solo";
-      sBtn.addEventListener("click", onSpin);
-    }
+    controlsRef.current = controls;
+    setSpinOn(controls.autoRotate);
 
     const onResize = () => {
       camera.aspect = W() / H();
@@ -374,6 +550,8 @@ export default function Viewer3D() {
 
     const clock = new THREE.Clock();
     let theta = 0;
+    let simDays = 0;
+    let uiAccum = 0;
     const pinW = new THREE.Vector3();
     const headW = new THREE.Vector3();
     const mid = new THREE.Vector3();
@@ -383,12 +561,28 @@ export default function Viewer3D() {
     function loop() {
       raf = requestAnimationFrame(loop);
       const dt = Math.min(clock.getDelta(), 0.05);
-      if (sim) {
+      const t = clock.elapsedTime;
+      // operario paleando (siempre, sutil)
+      const armPivot = operator.userData.armPivot as THREE.Group;
+      armPivot.rotation.x = -0.35 + Math.sin(t * 2.4) * 0.5;
+      operator.position.y = Math.sin(t * 2.4 + 1) * 0.015;
+
+      if (simRef.current) {
         theta += dt * 28;
         fwGroup.rotation.z = theta;
         deckShake.position.x = -Math.sin(theta) * 0.1;
         updateParticles(dt);
         updateWater(dt);
+        updateFeed(dt);
+        // tiempo acelerado + oro acumulado
+        simDays += dt * TIME_SCALE;
+        if (simDays >= 365) simDays = 0;
+        uiAccum += dt;
+        if (uiAccum >= 0.12) {
+          uiAccum = 0;
+          const grams = paramsRef.current.gramsPerDay * simDays;
+          setHud({ days: Math.floor(simDays), grams, usd: grams * paramsRef.current.usdPerGram });
+        }
       }
       eccPin.getWorldPosition(pinW);
       headAnchor.getWorldPosition(headW);
@@ -402,13 +596,11 @@ export default function Viewer3D() {
     }
     loop();
 
-    // ---- cleanup (importante por el doble-montaje de React Strict Mode) ----
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", onResize);
-      if (pBtn) pBtn.removeEventListener("click", onPlay);
-      if (sBtn) sBtn.removeEventListener("click", onSpin);
       controls.dispose();
+      controlsRef.current = null;
       sprite.dispose();
       if (pmrem) pmrem.dispose();
       scene.traverse((obj) => {
@@ -424,38 +616,43 @@ export default function Viewer3D() {
   }, []);
 
   return (
-    <section className="section" style={{ background: "var(--dark)", color: "#fff" }}>
-      <div className="wrap">
-        <Reveal className="shead center" style={{ marginLeft: "auto", marginRight: "auto" }}>
-          <span className="eyebrow">Vista 3D</span>
-          <h2 style={{ color: "#fff" }}>
-            Explore la mesa en <span className="o">3D</span>
-          </h2>
-        </Reveal>
-        <Reveal>
-          <div className="viewer3d-stage" ref={stageRef}>
-            <div className="v3d-legend">
-              <span className="v3d-dot" style={{ background: "#FC8F33" }} />
-              Oro → concentrado
-              <span className="v3d-dot" style={{ background: "#9a9aa2", marginLeft: 14 }} />
-              Relave → descarga
-            </div>
-            <div className="v3d-controls">
-              <button ref={playRef} type="button">
-                Pausar simulación
-              </button>
-              <button ref={spinRef} type="button">
-                Detener giro
-              </button>
-            </div>
+    <>
+      <div className="viewer3d-stage" ref={stageRef}>
+        <div className="sim-3d-overlay">
+          <div className="s3o-row">
+            <Clock />
+            <span>
+              Tiempo simulado: <b>{hud.days} días</b>
+            </span>
           </div>
-          <div className="v3d-hint">
-            <RotateCw />
-            Arrastre para girar &nbsp;·&nbsp; rueda para acercar &nbsp;·&nbsp; simulación de
-            separación en vivo
+          <div className="s3o-row s3o-gold">
+            <Coins />
+            <span>
+              Oro recuperado: <b>{fmtMass(hud.grams)}</b>
+              <em>{fmtUsd(hud.usd)}</em>
+            </span>
           </div>
-        </Reveal>
+        </div>
+        <div className="v3d-legend">
+          <span className="v3d-dot" style={{ background: "#FC8F33" }} />
+          Oro → concentrado
+          <span className="v3d-dot" style={{ background: "#9a9aa2", marginLeft: 14 }} />
+          Relave → descarga
+        </div>
+        <div className="v3d-controls">
+          <button type="button" onClick={toggleSim}>
+            {simOn ? "Pausar" : "Reanudar"}
+          </button>
+          <button type="button" onClick={toggleSpin}>
+            {spinOn ? "Detener giro" : "Girar"}
+          </button>
+        </div>
       </div>
-    </section>
+      <div className="v3d-hint">
+        <RotateCw />
+        Arrastre para girar &nbsp;·&nbsp; rueda para acercar &nbsp;·&nbsp; el contador usa
+        tiempo acelerado
+      </div>
+    </>
   );
 }

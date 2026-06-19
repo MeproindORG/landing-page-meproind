@@ -6,7 +6,7 @@ import MercurySection from "@/components/MercurySection";
 import ValueBand from "@/components/ValueBand";
 import Models from "@/components/Models";
 import SpeedClaim from "@/components/SpeedClaim";
-import Viewer3D from "@/components/Viewer3D";
+import RecoverySimulator from "@/components/RecoverySimulator";
 import Anatomy from "@/components/Anatomy";
 import ComparisonTable from "@/components/ComparisonTable";
 import GoldTech from "@/components/GoldTech";
@@ -30,7 +30,7 @@ export default function Home() {
         <ValueBand />
         <Models />
         <SpeedClaim />
-        <Viewer3D />
+        <RecoverySimulator />
         <Anatomy />
         <ComparisonTable />
         <GoldTech />
