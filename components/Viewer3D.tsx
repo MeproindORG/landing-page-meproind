@@ -356,9 +356,9 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
 
     // Operario A — agarra mineral del montículo y lo echa a la tolva
     const feeder = buildWorker(0x2f4d6e, 0xf2a800);
-    feeder.position.set(-3.05, 0, 1.62);
-    feeder.rotation.y = 2.5; // mira hacia la tolva
-    feeder.scale.setScalar(1.42);
+    feeder.position.set(-3.5, 0, 1.95);
+    feeder.rotation.y = 2.46; // mira hacia la tolva
+    feeder.scale.setScalar(2.0);
     const shovel = new THREE.Group();
     const sHandle = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.6, 8), handleMat);
     sHandle.position.set(0, -0.18, 0.12);
@@ -384,32 +384,32 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
     scene.add(feeder);
 
     // montículo de mineral (fuente) + sacos junto al operario
-    const orePile = new THREE.Mesh(new THREE.ConeGeometry(0.42, 0.3, 18), matOre);
-    orePile.position.set(-2.95, 0.13, 1.45);
+    const orePile = new THREE.Mesh(new THREE.ConeGeometry(0.6, 0.45, 18), matOre);
+    orePile.position.set(-2.85, 0.22, 1.4);
     orePile.castShadow = true;
     orePile.receiveShadow = true;
     scene.add(orePile);
     (
       [
-        [-4.2, 0.6],
-        [-4.28, 1.18],
+        [-4.55, 0.7],
+        [-4.6, 1.45],
       ] as const
     ).forEach((s) => {
       const sack = new THREE.Mesh(
-        new THREE.SphereGeometry(0.26, 12, 10),
+        new THREE.SphereGeometry(0.34, 12, 10),
         new THREE.MeshStandardMaterial({ color: 0x6f5f39, roughness: 0.95 }),
       );
       sack.scale.set(1, 0.78, 0.82);
-      sack.position.set(s[0], 0.2, s[1]);
+      sack.position.set(s[0], 0.24, s[1]);
       sack.castShadow = true;
       scene.add(sack);
     });
 
     // Operario B — recibe el concentrado de oro en una batea (plana, al frente)
     const collector = buildWorker(0x3b3f46, 0xf2a800);
-    collector.position.set(4.0, 0, 0.5);
+    collector.position.set(4.6, 0, 0.35);
     collector.rotation.y = -Math.PI / 2; // mira hacia -x (la mesa)
-    collector.scale.setScalar(1.42);
+    collector.scale.setScalar(2.0);
     const panHolder = new THREE.Group();
     panHolder.position.set(0, 0.16, 0.52); // al frente, a la cintura
     (collector.userData.hip as THREE.Group).add(panHolder);
