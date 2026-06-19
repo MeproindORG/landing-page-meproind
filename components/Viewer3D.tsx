@@ -384,8 +384,8 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
     scene.add(feeder);
 
     // montículo de mineral (fuente) + sacos junto al operario
-    const orePile = new THREE.Mesh(new THREE.ConeGeometry(0.6, 0.45, 18), matOre);
-    orePile.position.set(-2.85, 0.22, 1.4);
+    const orePile = new THREE.Mesh(new THREE.ConeGeometry(0.5, 0.4, 18), matOre);
+    orePile.position.set(-4.2, 0.2, 1.75);
     orePile.castShadow = true;
     orePile.receiveShadow = true;
     scene.add(orePile);
@@ -407,11 +407,11 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
 
     // Operario B — recibe el concentrado de oro en una batea (plana, al frente)
     const collector = buildWorker(0x3b3f46, 0xf2a800);
-    collector.position.set(4.6, 0, 0.35);
+    collector.position.set(4.3, 0, 0.3);
     collector.rotation.y = -Math.PI / 2; // mira hacia -x (la mesa)
     collector.scale.setScalar(2.0);
     const panHolder = new THREE.Group();
-    panHolder.position.set(0, 0.16, 0.52); // al frente, a la cintura
+    panHolder.position.set(0, 0.04, 0.52); // al frente, a la altura del tablero (cintura)
     (collector.userData.hip as THREE.Group).add(panHolder);
     const pan = new THREE.Mesh(
       new THREE.CylinderGeometry(0.28, 0.17, 0.08, 24),
@@ -547,7 +547,7 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
     const gdata: { x: number; y: number; z: number }[] = [];
     const goldTarget = new THREE.Vector3(3.55, 1.25, 0.5); // batea (se recalcula cada frame)
     function gspawn(i: number) {
-      gdata[i] = { x: 2.7 + Math.random() * 0.4, y: 1.5 + Math.random() * 0.1, z: 0.0 + Math.random() * 0.6 };
+      gdata[i] = { x: 2.95 + Math.random() * 0.3, y: 1.56 + Math.random() * 0.08, z: 0.1 + Math.random() * 0.4 };
     }
     for (let i = 0; i < GN; i++) gspawn(i);
     gGeo.setAttribute("position", new THREE.BufferAttribute(gpos, 3));
