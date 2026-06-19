@@ -356,8 +356,8 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
 
     // Operario A — agarra mineral del montículo y lo echa a la tolva
     const feeder = buildWorker(0x2f4d6e, 0xf2a800);
-    feeder.position.set(-4.45, 0, 2.35);
-    feeder.rotation.y = 2.22; // mira hacia la tolva
+    feeder.position.set(-4.3, 0, 2.25);
+    feeder.rotation.y = 2.32; // mira hacia la tolva
     feeder.scale.setScalar(2.0);
     const shovel = new THREE.Group();
     const sHandle = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.6, 8), handleMat);
@@ -386,9 +386,9 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
     // montículos de mineral (fuente) — todos cónicos; el operario palea del más cercano
     (
       [
-        [-3.55, 1.6, 0.55, 0.42], // principal (donde cae la pala)
-        [-4.95, 2.95, 0.46, 0.36],
-        [-5.25, 2.35, 0.4, 0.32],
+        [-3.3, 0.66, 0.58, 0.6], // principal (donde cae la pala)
+        [-4.75, 2.95, 0.46, 0.4],
+        [-5.05, 2.35, 0.4, 0.34],
       ] as const
     ).forEach((m) => {
       const mound = new THREE.Mesh(new THREE.ConeGeometry(m[2], m[3], 18), matOre);
@@ -576,6 +576,67 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
       gGeo.attributes.position.needsUpdate = true;
     }
 
+    // ---- mineral que el operario lanza de la pala hacia la tolva (al voltear) ----
+    const TON = 26;
+    const toGeo = new THREE.BufferGeometry();
+    const topos = new Float32Array(TON * 3).fill(-999);
+    const todata: { x: number; y: number; z: number; vx: number; vy: number; vz: number; life: number }[] = [];
+    for (let i = 0; i < TON; i++) todata[i] = { x: 0, y: -999, z: 0, vx: 0, vy: 0, vz: 0, life: 0 };
+    toGeo.setAttribute("position", new THREE.BufferAttribute(topos, 3));
+    const thrownOre = new THREE.Points(
+      toGeo,
+      new THREE.PointsMaterial({
+        size: 0.15,
+        map: sprite,
+        color: 0xc79a5b,
+        transparent: true,
+        opacity: 0.97,
+        alphaTest: 0.05,
+        depthWrite: false,
+        sizeAttenuation: true,
+      }),
+    );
+    scene.add(thrownOre);
+    const HOPPER_MOUTH = new THREE.Vector3(-2.55, 2.3, 0.9);
+    const bladeWp = new THREE.Vector3();
+    const TG = 3.6; // gravedad de escena para el arco
+    function emitThrow() {
+      blade.getWorldPosition(bladeWp);
+      const T = 0.62;
+      let emitted = 0;
+      for (let i = 0; i < TON && emitted < 14; i++) {
+        const d = todata[i];
+        if (d.life > 0) continue;
+        d.x = bladeWp.x;
+        d.y = bladeWp.y;
+        d.z = bladeWp.z;
+        d.vx = (HOPPER_MOUTH.x - bladeWp.x) / T + (Math.random() - 0.5) * 0.5;
+        d.vz = (HOPPER_MOUTH.z - bladeWp.z) / T + (Math.random() - 0.5) * 0.5;
+        d.vy = (HOPPER_MOUTH.y - bladeWp.y) / T + 0.5 * TG * T;
+        d.life = T;
+        emitted++;
+      }
+    }
+    function updateThrownOre(dt: number) {
+      for (let i = 0; i < TON; i++) {
+        const d = todata[i];
+        const o = i * 3;
+        if (d.life > 0) {
+          d.vy -= TG * dt;
+          d.x += d.vx * dt;
+          d.y += d.vy * dt;
+          d.z += d.vz * dt;
+          d.life -= dt;
+          topos[o] = d.x;
+          topos[o + 1] = d.life > 0 ? d.y : -999;
+          topos[o + 2] = d.z;
+        } else {
+          topos[o + 1] = -999;
+        }
+      }
+      toGeo.attributes.position.needsUpdate = true;
+    }
+
     function updateFeed(dt: number) {
       for (let i = 0; i < FN; i++) {
         const d = fdata[i];
@@ -667,13 +728,13 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
     // Keyframes: c (fase 0..1), hip (inclinación), sh (hombro: − = al frente), tip (vaciar pala), load (mineral en pala).
     const FEED_CYCLE = 3.6;
     const fK = [
-      { c: 0.0, hip: 0.55, sh: -0.55, tip: 0.0, load: 0.0 },
-      { c: 0.16, hip: 0.55, sh: -0.62, tip: 0.0, load: 1.0 },
-      { c: 0.42, hip: 0.12, sh: -1.15, tip: 0.05, load: 1.0 },
-      { c: 0.6, hip: -0.04, sh: -1.95, tip: 0.15, load: 1.0 },
-      { c: 0.72, hip: -0.04, sh: -2.05, tip: 1.3, load: 0.0 },
-      { c: 0.86, hip: 0.26, sh: -0.7, tip: 0.2, load: 0.0 },
-      { c: 1.0, hip: 0.55, sh: -0.55, tip: 0.0, load: 0.0 },
+      { c: 0.0, hip: 0.8, sh: -0.95, tip: 0.0, load: 0.0 },
+      { c: 0.16, hip: 0.8, sh: -1.0, tip: 0.0, load: 1.0 },
+      { c: 0.42, hip: 0.3, sh: -0.7, tip: 0.0, load: 1.0 },
+      { c: 0.62, hip: 0.0, sh: -1.15, tip: 0.1, load: 1.0 },
+      { c: 0.74, hip: 0.0, sh: -1.25, tip: 1.2, load: 0.0 },
+      { c: 0.88, hip: 0.35, sh: -0.7, tip: 0.2, load: 0.0 },
+      { c: 1.0, hip: 0.8, sh: -0.95, tip: 0.0, load: 0.0 },
     ];
     function animateFeeder(time: number) {
       const c = (time % FEED_CYCLE) / FEED_CYCLE;
@@ -696,6 +757,7 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
     }
 
     let raf = 0;
+    let prevCycle = 0;
     function loop() {
       raf = requestAnimationFrame(loop);
       const dt = Math.min(clock.getDelta(), 0.05);
@@ -714,6 +776,10 @@ export default function Viewer3D({ grade, gramsPerDay, usdPerGram }: Viewer3DPro
         updateFeed(dt);
         (collector.userData.pan as THREE.Mesh).getWorldPosition(goldTarget);
         updateGold(dt);
+        const cyc = (t % FEED_CYCLE) / FEED_CYCLE;
+        if (prevCycle < 0.74 && cyc >= 0.74) emitThrow();
+        prevCycle = cyc;
+        updateThrownOre(dt);
         // tiempo acelerado + oro acumulado
         simDays += dt * TIME_SCALE;
         if (simDays >= 365) simDays = 0;
