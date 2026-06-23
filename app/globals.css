@@ -57,7 +57,12 @@ header.scrolled{background:rgba(21,18,14,.88);backdrop-filter:blur(12px);padding
 .nav-toggle svg{width:30px;height:30px}
 .mobile-menu{display:none}
 /* hero full-bleed */
-.hero{position:relative;color:#fff;background:linear-gradient(96deg,rgba(15,18,14,.96) 0%,rgba(15,18,14,.84) 40%,rgba(15,18,14,.42) 100%),url('/img/landing/m1.jpg');background-size:cover;background-position:center;padding:170px 0 100px}
+.hero{position:relative;color:#fff;background-color:#15120e;padding:170px 0 100px;overflow:hidden}
+/* fondo borroso a sangre completa = ambiente/profundidad (no banda plana) */
+.hero::after{content:"";position:absolute;inset:0;z-index:0;background:url('/img/landing/hero-concentra.jpg') center/cover no-repeat;filter:blur(36px) brightness(.28) saturate(.3);transform:scale(1.18)}
+/* foto COMPLETA (contain) anclada a la derecha + degradado-sombra para el texto */
+.hero::before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(95deg,rgba(6,7,8,.95) 0%,rgba(6,7,8,.9) 33%,rgba(6,7,8,.66) 47%,rgba(6,7,8,.18) 58%,rgba(6,7,8,0) 70%),url('/img/landing/hero-concentra.jpg') right center/contain no-repeat;pointer-events:none}
+.hero .wrap{position:relative;z-index:2;max-width:none;padding-right:24px;padding-left:clamp(24px,calc((100vw - 1180px)*0.3),260px)}
 .hero h1{font-family:var(--fdisp);font-stretch:125%;font-weight:900;color:#fff;font-size:clamp(2.6rem,5.6vw,4.8rem);line-height:.98;letter-spacing:-.025em}
 .hero h1 .accent{color:var(--o)}
 .hero p.lead{margin:22px 0 30px;color:rgba(255,255,255,.82)}
@@ -223,6 +228,8 @@ footer ul a{font-size:.9rem;transition:color .2s} footer ul a:hover{color:var(--
 .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
 .reveal.in{opacity:1;transform:none}
 @media(max-width:920px){
+  .hero::after{display:none}
+  .hero::before{background:linear-gradient(168deg,rgba(15,18,14,.84) 0%,rgba(15,18,14,.5) 55%,rgba(15,18,14,.4) 100%),url('/img/landing/hero-concentra.jpg') center center/cover no-repeat}
   .gold-wrap,.anat-wrap,.sim-grid{grid-template-columns:1fr;gap:28px}
   .statband .wrap{grid-template-columns:repeat(3,1fr);gap:26px}
   .vs{grid-template-columns:1fr}
