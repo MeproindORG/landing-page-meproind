@@ -8,7 +8,11 @@ export default function Hero() {
         <div className="reveal in" style={{ maxWidth: 680 }}>
           <span className="eyebrow">Especialistas en recuperación de oro</span>
           <h1 style={{ marginTop: 18 }}>
-            Recupere hasta <span className="accent">91%</span> de su oro. Sin mercurio.
+            Recupera más Oro
+            <br />
+            <span className="mark">Sin Mercurio</span>
+            <br />
+            Sin depender de Nadie
           </h1>
           <p className="lead">
             Mesas gravimétricas de alta precisión, fabricadas en el Perú. Separación
