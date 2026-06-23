@@ -15,8 +15,8 @@ export default function Hero() {
             Sin depender de Nadie
           </h1>
           <p className="lead">
-            Mesas gravimétricas de alta precisión, fabricadas en el Perú. Separación
-            únicamente con agua — captura partículas finas y gruesas, sin químicos tóxicos.
+            Mesas gravimétricas hechas en Perú que recuperan hasta el 91% en el
+            concentrado de tu mineral utilizando solo agua y electricidad.
           </p>
           <div className="hero-cta">
             <a className="btn btn-o" href={wa()} target="_blank" rel="noopener">
