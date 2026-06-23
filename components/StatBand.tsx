@@ -12,20 +12,28 @@ export default function StatBand() {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let counted = false;
     const nums = Array.from(el.querySelectorAll<HTMLElement>("[data-count]"));
+    const easeOutQuart = (p: number) => 1 - Math.pow(1 - p, 4);
 
     const run = () => {
-      nums.forEach((n) => {
+      el.classList.add("in"); // dispara la entrada (fade + slide-up con stagger por CSS)
+      nums.forEach((n, i) => {
         const target = parseFloat(n.getAttribute("data-count") || "0");
-        if (reduce || target === 0) {
+        if (reduce) {
           n.textContent = String(target);
           return;
         }
-        const dur = 1100;
+        const dur = 1500;
+        const delay = i * 130; // el conteo entra escalonado, en sync con la entrada
         let start: number | null = null;
         const step = (ts: number) => {
           if (start === null) start = ts;
-          const p = Math.min((ts - start) / dur, 1);
-          n.textContent = String(Math.round(target * (1 - Math.pow(1 - p, 3))));
+          const t = ts - start - delay;
+          if (t < 0) {
+            requestAnimationFrame(step);
+            return;
+          }
+          const p = Math.min(t / dur, 1);
+          n.textContent = String(Math.round(target * easeOutQuart(p)));
           if (p < 1) requestAnimationFrame(step);
         };
         requestAnimationFrame(step);

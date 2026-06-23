@@ -71,8 +71,11 @@ header.scrolled{background:rgba(21,18,14,.88);backdrop-filter:blur(12px);padding
 .hero-trust{margin-top:26px;display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.62);font-size:.84rem}
 .hero-trust svg{width:16px;height:16px;color:var(--o)}
 .statband{background:var(--dark2);border-top:1px solid var(--dark-line);color:#fff}
-.statband .wrap{display:grid;grid-template-columns:repeat(5,1fr);gap:18px;padding-top:38px;padding-bottom:38px}
-.stat{text-align:center}
+.statband .wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding-top:38px;padding-bottom:38px}
+.stat{text-align:center;opacity:0;transform:translateY(22px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.statband.in .stat{opacity:1;transform:none}
+.statband.in .stat:nth-child(2){transition-delay:.13s}
+.statband.in .stat:nth-child(3){transition-delay:.26s}
 .stat .n{font-family:var(--fdisp);font-stretch:125%;font-weight:900;font-size:clamp(2rem,3.4vw,3rem);line-height:1;letter-spacing:-.02em}
 .stat .n.o{color:var(--o)}
 .stat .l{font-size:.78rem;color:rgba(255,255,255,.55);margin-top:8px;letter-spacing:.04em}
@@ -253,7 +256,7 @@ footer ul a{font-size:.9rem;transition:color .2s} footer ul a:hover{color:var(--
   .mobile-cta .btn{width:100%;justify-content:center}
 }
 @media(max-width:560px){
-  .statband .wrap{grid-template-columns:repeat(2,1fr)}
+  .statband .wrap{grid-template-columns:repeat(3,1fr)}
   .mgrid,.tgrid,.gallery{grid-template-columns:1fr}
   .fgrid{grid-template-columns:1fr}
   .sim-fields{grid-template-columns:1fr}
@@ -282,7 +285,7 @@ footer ul a{font-size:.9rem;transition:color .2s} footer ul a:hover{color:var(--
   .ctable td.oth::before{content:"Otras marcas";display:block;font-family:var(--fhead);font-weight:700;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin-bottom:5px}
 }
 @media(max-width:380px){
-  .statband .wrap{grid-template-columns:1fr 1fr;gap:18px}
+  .statband .wrap{grid-template-columns:repeat(3,1fr);gap:14px}
   .v3d-legend{flex-wrap:wrap;max-width:160px}
 }
-@media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}.hot{animation:none}.mobile-menu.open{animation:none}html{scroll-behavior:auto}}
+@media(prefers-reduced-motion:reduce){.reveal,.stat{opacity:1;transform:none;transition:none}.hot{animation:none}.mobile-menu.open{animation:none}html{scroll-behavior:auto}}

@@ -43,11 +43,9 @@ export interface StatItem {
   accent?: boolean;
 }
 export const STATS: StatItem[] = [
-  { count: 91, suffix: "%", label: "Recuperación de oro", accent: true },
-  { count: 0, suffix: "%", label: "Mercurio · solo agua" },
-  { count: null, text: "2.5", label: "tn/h capacidad máx." },
+  { count: 165, prefix: "+", label: "Mesas instaladas en el Perú", accent: true },
+  { count: 6, prefix: "+", label: "Años de experiencia" },
   { count: 4, label: "Modelos disponibles" },
-  { count: 4, prefix: "+", label: "Años de experiencia" },
 ];
 
 export interface Model {
