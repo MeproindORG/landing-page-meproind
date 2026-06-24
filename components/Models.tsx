@@ -43,7 +43,6 @@ export default function Models() {
                   </span>
                 )}
                 <span className="msel-tab-code">{mm.code}</span>
-                <span className="msel-tab-cap">{mm.capacity}</span>
               </button>
             ))}
           </div>
@@ -80,7 +79,7 @@ export default function Models() {
               <div className="msel-cta">
                 <a className="btn btn-o" href={wa(m.waMsg)} target="_blank" rel="noopener">
                   <MessageCircle />
-                  Cotiza la {m.code} por WhatsApp
+                  Cotizar aquí
                 </a>
                 <a
                   className="btn btn-ghost-ink"

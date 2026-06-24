@@ -43,9 +43,9 @@ export interface StatItem {
   accent?: boolean;
 }
 export const STATS: StatItem[] = [
-  { count: 165, prefix: "+", label: "Mesas instaladas en el Perú", accent: true },
-  { count: 6, prefix: "+", label: "Años de experiencia" },
-  { count: 4, label: "Modelos disponibles" },
+  { count: 165, prefix: "+", accent: true, label: "Mesas instaladas en el Perú" },
+  { count: 6, prefix: "+", accent: true, label: "Años de experiencia" },
+  { count: 4, accent: true, label: "Modelos disponibles" },
 ];
 
 export interface Model {

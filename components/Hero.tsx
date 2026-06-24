@@ -6,8 +6,7 @@ export default function Hero() {
     <section className="hero">
       <div className="wrap">
         <div className="reveal in" style={{ maxWidth: 680 }}>
-          <span className="eyebrow">Especialistas en recuperación de oro</span>
-          <h1 style={{ marginTop: 18 }}>
+          <h1 style={{ marginTop: 0 }}>
             Recupera más Oro
             <br />
             <span className="mark">Sin Mercurio</span>
