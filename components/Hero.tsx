@@ -20,7 +20,7 @@ export default function Hero() {
           <div className="hero-cta">
             <a className="btn btn-o" href={wa()} target="_blank" rel="noopener">
               <MessageCircle />
-              Solicitar cotización
+              Prueba gratis
             </a>
             <a className="btn btn-ghost" href="#modelos">
               Ver modelos
