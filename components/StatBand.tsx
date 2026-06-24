@@ -22,8 +22,8 @@ export default function StatBand() {
           n.textContent = String(target);
           return;
         }
-        const dur = 1500;
-        const delay = i * 130; // el conteo entra escalonado, en sync con la entrada
+        const dur = 2200;
+        const delay = i * 180; // el conteo entra escalonado, en sync con la entrada
         let start: number | null = null;
         const step = (ts: number) => {
           if (start === null) start = ts;
@@ -49,7 +49,7 @@ export default function StatBand() {
           }
         });
       },
-      { threshold: 0.3 },
+      { threshold: 0.55, rootMargin: "0px 0px -80px 0px" },
     );
     io.observe(el);
     return () => io.disconnect();

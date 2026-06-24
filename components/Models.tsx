@@ -1,9 +1,15 @@
-import { MessageCircle, Download, FileDown } from "lucide-react";
+"use client";
+
+import { useState } from "react";
+import { MessageCircle, Download, FileDown, Star } from "lucide-react";
 import Reveal from "./Reveal";
 import { MODELS } from "@/lib/content";
 import { wa } from "@/lib/whatsapp";
 
 export default function Models() {
+  const [active, setActive] = useState(0);
+  const m = MODELS[active];
+
   return (
     <section className="section models" id="modelos">
       <div className="wrap">
@@ -13,35 +19,94 @@ export default function Models() {
             Elija la mesa ideal <span className="o">para su operación</span>
           </h2>
           <p className="lead" style={{ margin: "0 auto" }}>
-            Desde la minería artesanal hasta la producción industrial. Todos los modelos
-            con hasta 91% de recuperación.
+            Misma tecnología y misma calidad en todas. Lo que cambia es el tamaño y la
+            capacidad — elige según cuánto procesas.
           </p>
         </Reveal>
-        <Reveal className="mgrid">
-          {MODELS.map((m) => (
-            <div className={m.popular ? "mcard pop" : "mcard"} key={m.code}>
-              {m.popular && <span className="pop-badge">Más popular</span>}
-              <img className="photo" src={m.img} alt={m.alt} />
-              <div className="mbody">
+
+        <Reveal className="msel">
+          {/* Pestañas */}
+          <div className="msel-tabs" role="tablist" aria-label="Modelos de mesa">
+            {MODELS.map((mm, i) => (
+              <button
+                key={mm.code}
+                type="button"
+                role="tab"
+                aria-selected={i === active}
+                className={i === active ? "msel-tab active" : "msel-tab"}
+                onClick={() => setActive(i)}
+              >
+                {mm.popular && (
+                  <span className="msel-tab-badge">
+                    <Star />
+                    Más popular
+                  </span>
+                )}
+                <span className="msel-tab-code">{mm.code}</span>
+                <span className="msel-tab-cap">{mm.capacity}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Panel del modelo activo */}
+          <div className="msel-panel">
+            <div className="msel-photo">
+              <img src={m.img} alt={m.alt} />
+            </div>
+            <div className="msel-info">
+              <span className="msel-eyebrow">{m.eyebrow}</span>
+              <h3 className="msel-title">Mesa {m.code}</h3>
+              <p className="msel-desc">{m.desc}</p>
+
+              <ul className="msel-specs">
+                <li>
+                  <span>Capacidad</span>
+                  <b className="o">{m.capacity}</b>
+                </li>
+                <li>
+                  <span>Tamaño total</span>
+                  <b>{m.size}</b>
+                </li>
+                <li>
+                  <span>Energía</span>
+                  <b>{m.energy}</b>
+                </li>
+                <li>
+                  <span>Recuperación</span>
+                  <b className="o">{m.recovery}</b>
+                </li>
+              </ul>
+
+              <div className="msel-cta">
+                <a className="btn btn-o" href={wa(m.waMsg)} target="_blank" rel="noopener">
+                  <MessageCircle />
+                  Cotiza la {m.code} por WhatsApp
+                </a>
                 <a
-                  className="btn btn-wa btn-sm"
-                  href={wa(m.waMsg)}
+                  className="btn btn-ghost-ink"
+                  href={m.plano}
                   target="_blank"
                   rel="noopener"
                 >
-                  <MessageCircle />
-                  Consultar
-                </a>
-                <a className="btn btn-ghost-ink btn-sm" target="_blank" rel="noopener" href={m.plano}>
                   <Download />
                   Descargar plano
                 </a>
               </div>
             </div>
-          ))}
+          </div>
+
+          <p className="msel-foot">
+            ¿No sabes cuál te conviene? Te asesoramos sin compromiso por WhatsApp.
+          </p>
         </Reveal>
-        <Reveal style={{ textAlign: "center", marginTop: 34 }}>
-          <a className="btn btn-ghost-ink" target="_blank" rel="noopener" href="/planos/xl-100.pdf">
+
+        <Reveal style={{ textAlign: "center", marginTop: 30 }}>
+          <a
+            className="btn btn-ghost-ink"
+            target="_blank"
+            rel="noopener"
+            href="/planos/xl-100.pdf"
+          >
             <FileDown />
             Descargar ficha técnica completa
           </a>

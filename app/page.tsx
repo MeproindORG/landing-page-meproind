@@ -1,4 +1,5 @@
 import Hero from "@/components/Hero";
+import HeroVideo from "@/components/HeroVideo";
 import StatBand from "@/components/StatBand";
 import TrustStrip from "@/components/TrustStrip";
 import Comparativa from "@/components/Comparativa";
@@ -23,6 +24,7 @@ export default function Home() {
       <span id="top" />
       <main>
         <Hero />
+        <HeroVideo />
         <StatBand />
         <TrustStrip />
         <Comparativa />
