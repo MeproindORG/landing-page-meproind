@@ -2,6 +2,7 @@ import Hero from "@/components/Hero";
 import HeroVideo from "@/components/HeroVideo";
 import StatBand from "@/components/StatBand";
 import TrustStrip from "@/components/TrustStrip";
+import Carousel from "@/components/Carousel";
 import Comparativa from "@/components/Comparativa";
 import MercurySection from "@/components/MercurySection";
 import ValueBand from "@/components/ValueBand";
@@ -27,6 +28,7 @@ export default function Home() {
         <HeroVideo />
         <StatBand />
         <TrustStrip />
+        <Carousel />
         <Comparativa />
         <MercurySection />
         <ValueBand />
