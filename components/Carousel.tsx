@@ -13,7 +13,7 @@ const SLIDES = [
   {
     src: "/img/landing/carrusel-1.jpg",
     alt: "Bateo de oro artesanal con agua",
-    cap: "Deja de perder oro en tus relaves",
+    cap: "Deja de perder oro con métodos tradicionales",
   },
   {
     src: "/img/landing/carrusel-2.jpg",
