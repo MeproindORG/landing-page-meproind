@@ -7,11 +7,11 @@ export default function Hero() {
       <div className="wrap">
         <div className="reveal in" style={{ maxWidth: 680 }}>
           <h1 style={{ marginTop: 0 }}>
-            Recupera más Oro
+            <span className="hl-top">Recupera MÁS ORO</span>
             <br />
-            <span className="mark">Sin Mercurio</span>
+            <span className="mark">SIN MERCURIO</span>
             <br />
-            Sin depender de Nadie
+            <span className="hl-bot">sin depender de nadie</span>
           </h1>
           <p className="lead">
             Mesas gravimétricas hechas en Perú que recuperan hasta el 91% en el

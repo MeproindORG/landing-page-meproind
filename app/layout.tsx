@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Archivo } from "next/font/google";
+import localFont from "next/font/local";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
@@ -15,6 +16,17 @@ const archivo = Archivo({
   subsets: ["latin"],
   axes: ["wdth"],
   variable: "--font-archivo",
+  display: "swap",
+});
+
+// Fibra (fuente de marca, OTF auto-alojada vía next/font) — solo para el titular
+// del hero: Bold (700) en las líneas y Ultra Bold (800) en el recuadro naranja.
+const fibra = localFont({
+  src: [
+    { path: "./fonts/Fibra-Bold.otf", weight: "700", style: "normal" },
+    { path: "./fonts/Fibra-UltraBold.otf", weight: "800", style: "normal" },
+  ],
+  variable: "--font-fibra",
   display: "swap",
 });
 
@@ -131,7 +143,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es" className={archivo.variable}>
+    <html lang="es" className={`${archivo.variable} ${fibra.variable}`}>
       <body>
         <Header />
         {children}
