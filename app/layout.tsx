@@ -4,6 +4,7 @@ import localFont from "next/font/local";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
+import CoinGuide from "@/components/CoinGuide";
 import { SITE, MODELS } from "@/lib/content";
 import { WA_PHONE } from "@/lib/whatsapp";
 import "./globals.css";
@@ -149,6 +150,7 @@ export default function RootLayout({
         {children}
         <Footer />
         <FloatingWhatsApp />
+        <CoinGuide />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

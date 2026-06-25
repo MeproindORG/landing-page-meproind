@@ -94,6 +94,10 @@ header.scrolled{background:rgba(21,18,14,.88);backdrop-filter:blur(12px);padding
 .planet-stat{max-width:1000px;margin:0;text-align:center;font-family:var(--fhead);font-weight:500;font-size:clamp(1.05rem,1.5vw,1.4rem);line-height:1.5;color:var(--ink2);text-wrap:balance}
 .planet-stat b{font-weight:700;color:#b8860b}
 .planet-stat .o{font-weight:800;color:var(--o)}
+/* Moneda guia 3D — overlay fijo por encima de todo, no bloquea interaccion */
+.coin-guide{position:fixed;top:82px;right:26px;width:clamp(92px,8.5vw,132px);height:clamp(92px,8.5vw,132px);z-index:60;pointer-events:none;filter:drop-shadow(0 6px 8px rgba(0,0,0,.28))}
+.coin-guide::after{content:"";position:absolute;left:50%;bottom:1px;transform:translateX(-50%);width:58%;height:12px;border-radius:50%;background:radial-gradient(ellipse,rgba(0,0,0,.42),rgba(0,0,0,0) 72%);filter:blur(2px);z-index:0}
+.coin-guide canvas{width:100%!important;height:100%!important;display:block;position:relative;z-index:1}
 /* Carrusel full-bleed (no interactivo): crossfade automatico + texto de impacto */
 .carousel{position:relative;width:100%;background:#0c0b0a}
 .carousel-frame{position:relative;width:100%;height:clamp(460px,60vh,620px);overflow:hidden;background:#0c0b0a;pointer-events:none}
