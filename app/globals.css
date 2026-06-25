@@ -63,7 +63,7 @@ header.scrolled{background:rgba(21,18,14,.88);backdrop-filter:blur(12px);padding
 /* foto COMPLETA (contain) anclada a la derecha + degradado-sombra para el texto */
 .hero::before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(95deg,rgba(6,7,8,.95) 0%,rgba(6,7,8,.9) 33%,rgba(6,7,8,.66) 47%,rgba(6,7,8,.18) 58%,rgba(6,7,8,0) 70%),url('/img/landing/hero-concentra.jpg') calc(100% + 160px) center/contain no-repeat;pointer-events:none}
 .hero .wrap{position:relative;z-index:2;width:100%;margin:0;max-width:none;padding-right:24px;padding-left:clamp(24px,calc((100vw - 1180px)*0.3),260px)}
-.hero h1{font-family:var(--font-fibra),var(--fdisp);font-weight:700;color:#fff;font-size:clamp(2rem,3.5vw,2.95rem);line-height:1.2;letter-spacing:-.02em}
+.hero h1{font-family:var(--font-fibra),var(--fdisp);font-weight:700;color:#fff;font-size:clamp(2rem,3.5vw,2.95rem);line-height:1.4;letter-spacing:-.02em}
 .hero h1 .accent{color:var(--o)}
 .hero h1 .mark{background:var(--o);color:#fff;font-weight:800;font-size:1.35em;padding:.04em .22em;border-radius:7px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
 /* tracking por linea para que cada frase cuadre con el recuadro naranja (solo desktop, donde van en una sola linea) */
@@ -89,11 +89,11 @@ header.scrolled{background:rgba(21,18,14,.88);backdrop-filter:blur(12px);padding
 .herovid-frame video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 @media(max-width:560px){.herovid{padding:34px 0}.herovid-frame{border-radius:var(--r-md)}}
 .trust{background:var(--canvas);border-bottom:1px solid var(--line)}
-.trust .wrap{padding:34px 24px;display:grid;grid-template-columns:repeat(2,auto);justify-content:center;justify-items:center;align-items:center;gap:18px clamp(28px,4vw,48px)}
-.trust .ti{display:flex;align-items:center;gap:10px;color:var(--ink2);font-size:.9rem;font-weight:500}
-.trust .ti svg{width:22px;height:22px;color:var(--o)}
-@media(min-width:1200px){.trust .wrap{grid-template-columns:repeat(4,auto)}}
-@media(max-width:560px){.trust .wrap{grid-template-columns:1fr}}
+.trust .wrap{padding:clamp(30px,4.5vw,54px) 24px;display:flex;justify-content:center}
+/* dato de contexto (PlanetGOLD) — porcentajes como heroes en naranja */
+.planet-stat{max-width:1000px;margin:0;text-align:center;font-family:var(--fhead);font-weight:500;font-size:clamp(1.05rem,1.5vw,1.4rem);line-height:1.5;color:var(--ink2);text-wrap:balance}
+.planet-stat b{font-weight:700;color:#b8860b}
+.planet-stat .o{font-weight:800;color:var(--o)}
 /* Carrusel full-bleed (no interactivo): crossfade automatico + texto de impacto */
 .carousel{position:relative;width:100%;background:#0c0b0a}
 .carousel-frame{position:relative;width:100%;height:clamp(460px,60vh,620px);overflow:hidden;background:#0c0b0a;pointer-events:none}
