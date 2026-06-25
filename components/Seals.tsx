@@ -3,6 +3,7 @@ import Reveal from "./Reveal";
 export default function Seals() {
   return (
     <section
+      className="seals"
       style={{ background: "var(--dark)", padding: "clamp(44px,6vw,72px) 0", textAlign: "center" }}
     >
       <Reveal className="wrap">

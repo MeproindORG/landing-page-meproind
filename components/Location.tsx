@@ -4,7 +4,7 @@ import { WA_PHONE_DISPLAY, WA_PHONE_ALT_DISPLAY } from "@/lib/whatsapp";
 
 export default function Location() {
   return (
-    <section className="section" style={{ background: "var(--canvas)" }}>
+    <section className="section location" style={{ background: "var(--canvas)" }}>
       <div className="wrap">
         <Reveal className="shead center">
           <span className="eyebrow">Visítenos</span>

@@ -2,7 +2,7 @@ import Reveal from "./Reveal";
 
 export default function VideoSection() {
   return (
-    <section className="section" style={{ background: "var(--panel)" }}>
+    <section className="section videosec" style={{ background: "var(--panel)" }}>
       <div className="wrap">
         <Reveal className="shead center">
           <span className="eyebrow">Conoce Meproind</span>

@@ -13,7 +13,7 @@ function withBold(text: string) {
 
 export default function ComparisonTable() {
   return (
-    <section className="section">
+    <section className="section comparison">
       <div className="wrap">
         <Reveal className="shead center">
           <span className="eyebrow">Comparativa técnica</span>

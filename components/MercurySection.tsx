@@ -10,7 +10,7 @@ const RISKS = [
 
 export default function MercurySection() {
   return (
-    <section className="section" style={{ background: "var(--canvas)" }}>
+    <section className="section mercury" style={{ background: "var(--canvas)" }}>
       <div className="wrap">
         <Reveal className="shead center">
           <span className="eyebrow">El método tradicional</span>

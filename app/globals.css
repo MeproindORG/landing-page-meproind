@@ -287,8 +287,11 @@ header.scrolled{background:rgba(21,18,14,.88);backdrop-filter:blur(12px);padding
 .gold-points{list-style:none;display:flex;flex-direction:column;gap:14px;margin-top:22px}
 .gold-points li{display:flex;gap:12px;font-size:.98rem;color:var(--ink2)}
 .gold-points li svg{width:22px;height:22px;color:var(--o);flex:none}
-.tgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
-.tcard{background:var(--surf);border:1px solid var(--line);border-radius:var(--r-lg);padding:24px;margin:0;display:flex;flex-direction:column;gap:13px}
+.tgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;perspective:1200px}
+.tcard{background:var(--surf);border:1px solid var(--line);border-radius:var(--r-lg);padding:24px;margin:0;display:flex;flex-direction:column;gap:13px;transform-style:preserve-3d}
+/* la moneda guía voltea cada testimonio al pasar por encima (der→izq) */
+.tcard.coin-flip{animation:coinFlip .7s cubic-bezier(.22,1,.36,1)}
+@keyframes coinFlip{from{transform:rotateY(0)}to{transform:rotateY(360deg)}}
 .tcard img{width:62px;height:62px;border-radius:50%;object-fit:cover;border:2px solid var(--osoft)}
 .tcard blockquote{margin:0;font-size:.93rem;color:var(--ink2);line-height:1.6}
 .tcard figcaption{margin-top:auto;font-size:.84rem;color:var(--ink3)}

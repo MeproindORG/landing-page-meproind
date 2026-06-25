@@ -271,80 +271,186 @@ export default function CoinGuide() {
         };
         document.addEventListener("visibilitychange", onVis);
 
-        // ---- seguimiento por scroll: la moneda se posiciona según la sección ----
-        // sel = sección (para detectar la activa); anchor = elemento de referencia
-        // (opcional); at(rect, vw, vh) = centro objetivo de la moneda en px de viewport.
+        // ---- seguimiento por scroll: la moneda guía y se posa según la sección ----
+        // sel = sección (detección de la activa, por orden de DOM); anchor = elemento de
+        // referencia; at(rect,vw,vh) = centro objetivo de la moneda (px de viewport).
+        // jump   = salta por encima de varios elementos (izq→der).
+        // seg    = salta por N segmentos de un único elemento (p.ej. imagen de sellos).
+        // invite = "amaga el click" (2 toques) sobre controles y luego se posa en `at`.
+        // flip   = voltea cada card al pasar la moneda (testimonios).
+        type Vec = { x: number; y: number };
         type GuideEntry = {
+          key: string;
           sel: string;
           anchor?: string;
-          jump?: string; // selector de elementos sobre los que la moneda salta (izq→der)
-          at?: (r: DOMRect, vw: number, vh: number) => { x: number; y: number };
+          at?: (r: DOMRect, vw: number, vh: number) => Vec;
+          jump?: string;
+          seg?: number;
+          invite?: string;
+          flip?: boolean;
         };
         const GUIDE: GuideEntry[] = [
-          // inicio: arriba-derecha, a la altura de la cara / lado "Cotizar"
-          { sel: ".hero", at: (_r, vw) => ({ x: vw - 95, y: 175 }) },
-          // video: abajo a la izquierda (hacia el borde), acompaña al video al subir
-          { sel: ".herovid", anchor: ".herovid-frame", at: (r) => ({ x: 75, y: r.bottom - 50 }) },
-          // números: salta sobre cada número (+165 → +6 → 4); el ciclo se bloquea hasta completar
-          { sel: ".statband", jump: ".statband .stat" },
-          // PlanetGOLD: a la derecha del texto
-          { sel: ".trust", anchor: ".planet-stat", at: (r, vw) => ({ x: Math.min(r.right + 72, vw - 48), y: r.top + r.height * 0.4 }) },
+          // 1 inicio — arriba-derecha, a la altura de la cara / lado "Cotizar"
+          { key: "hero", sel: ".hero", at: (_r, vw) => ({ x: vw - 95, y: 175 }) },
+          // 2 video — esquina inferior izquierda; acompaña al video
+          { key: "video", sel: ".herovid", anchor: ".herovid-frame", at: (r) => ({ x: 95, y: r.bottom - 58 }) },
+          // 3 números — salta +165 → +6 → 4 (el conteo ya arranca solo al entrar)
+          { key: "stats", sel: ".statband", jump: ".statband .stat" },
+          // 4 PlanetGOLD — a la derecha de la frase
+          { key: "planet", sel: ".trust", anchor: ".planet-stat", at: (r, vw) => ({ x: Math.min(r.right + 70, vw - 80), y: r.top + r.height * 0.42 }) },
+          // 5 carrusel — arriba-derecha (sigue junto a "según PlanetGOLD")
+          { key: "carousel", sel: ".carousel", at: (r, vw, vh) => ({ x: vw - 90, y: Math.max(r.top + 70, vh * 0.16) }) },
+          // 6 ¿Por qué Meproind? — gira a la izquierda, parte baja, junto a "Mesa MEPROIND"
+          { key: "why", sel: "#comparativa", anchor: ".vcard.win", at: (r) => ({ x: r.left - 18, y: r.top + r.height * 0.42 }) },
+          // 7 método tradicional — al medio-izquierda de los 2 renglones del título
+          { key: "mercury", sel: ".mercury", anchor: ".mercury .shead h2", at: (r) => ({ x: r.left + 24, y: r.top + r.height / 2 }) },
+          // 8 10% más / 1 kilo — lado derecho
+          { key: "value", sel: ".valueband", at: (r, vw) => ({ x: vw - 92, y: r.top + r.height / 2 }) },
+          // 9 modelos XL — amaga click en "Más popular", luego gira a la izq. junto a XL-25
+          { key: "models", sel: ".models", anchor: ".msel-tabs", invite: ".msel-tab-badge", at: (r) => ({ x: r.left - 12, y: r.top + r.height / 2 }) },
+          // 10 Trabaja 100X — gira a la izquierda
+          { key: "speed", sel: ".claim", at: (r) => ({ x: 96, y: r.top + r.height / 2 }) },
+          // 11 simulador — amaga click en campos + cotizar, luego arriba-derecha (oro recuperado)
+          { key: "sim", sel: ".sim", anchor: ".sim-right", invite: ".sim-field, .reco-cta .btn-o", at: (r) => ({ x: r.right - 64, y: r.top + 82 }) },
+          // 12 anatomía — derecha, por encima de la foto del punto seleccionado
+          { key: "anatomy", sel: ".anatomy", anchor: ".anat-panel", at: (r) => ({ x: r.right - 46, y: Math.max(r.top - 6, 96) }) },
+          // 13 comparativa técnica — izquierda, baja con el usuario
+          { key: "compare", sel: ".comparison", at: (_r, _vw, vh) => ({ x: 92, y: vh * 0.42 }) },
+          // 14 GoldTech — derecha (al nivel del icono de WhatsApp), junto a "Tecnología propia"
+          { key: "goldtech", sel: "#tecnologia", anchor: ".gtag", at: (r, vw) => ({ x: vw - 78, y: r.top + r.height / 2 }) },
+          // 15 Conoce Meproind — amaga play, luego junto al borde izq. del video (un poco más arriba)
+          { key: "video2", sel: ".videosec", anchor: ".videosec video", invite: ".videosec video", at: (r) => ({ x: r.left - 6, y: r.top + r.height * 0.36 }) },
+          // 16 sellos garantía — salta sobre los 3 sellos (imagen única → 3 segmentos)
+          { key: "seals", sel: ".seals", anchor: ".seals img", seg: 3 },
+          // 17 prensa — a la derecha de "Reportado por El Comercio", girando
+          { key: "press", sel: ".press", anchor: ".press .shead h2", at: (r, vw) => ({ x: Math.min(r.right + 60, vw - 80), y: r.top + r.height / 2 }) },
+          // 18 testimonios — salta y voltea los 4 cards (der→izq), queda junto al card izquierdo
+          { key: "testi", sel: ".testimonials", jump: ".tgrid .tcard", flip: true, at: (r) => ({ x: r.left - 30, y: r.top + r.height / 2 }) },
+          // 19 visítenos — amaga click en Maps/Waze, luego gira a la derecha de "Waze"
+          { key: "location", sel: ".location", anchor: ".location .btn-ghost-ink", invite: ".location .btn-o, .location .btn-ghost-ink", at: (r, vw) => ({ x: Math.min(r.right + 56, vw - 80), y: r.top + r.height / 2 }) },
+          // 20 hablemos de su operación — amaga "Cotizar/Llamar", luego esquina inferior izq.
+          { key: "cta", sel: ".ctaband", invite: ".ctaband .btn-wa, .ctaband .btn-ghost", at: (_r, _vw, vh) => ({ x: 96, y: vh - 110 }) },
         ];
+
         let curX = 0;
         let curY = 0;
         let posInit = false;
-        let jumpStartT = 0;
-        let jumpTriggered = false;
-        let jumpDone = false;
+        let lastScrollY = window.scrollY;
+        let scrollDir = 1; // +1 baja, -1 sube (para reproducir las animaciones al revés)
+        // estado de la sección "especial" en curso (salto/amago)
+        let sec = { key: "", t0: 0, done: false, reversed: false };
+
+        const clearFlips = () => {
+          document
+            .querySelectorAll(".tcard.coin-flip")
+            .forEach((e) => e.classList.remove("coin-flip"));
+        };
+
+        // calcula el objetivo durante un salto/amago (timeline determinista por t0)
+        function hopTarget(active: GuideEntry): Vec | null {
+          const mode = active.jump ? "jump" : active.seg ? "seg" : "invite";
+          type Item = { left: number; top: number; width: number; height: number; el?: Element };
+          let items: Item[] = [];
+          if (active.seg) {
+            const a = document.querySelector(active.anchor ?? active.sel);
+            if (!a) return null;
+            const ar = a.getBoundingClientRect();
+            const colW = ar.width / active.seg;
+            for (let k = 0; k < active.seg; k++)
+              items.push({ left: ar.left + colW * k, top: ar.top, width: colW, height: ar.height });
+          } else {
+            const sel = (active.jump ?? active.invite) as string;
+            const els = Array.from(document.querySelectorAll(sel));
+            if (!els.length) return null;
+            items = els.map((el) => {
+              const r = el.getBoundingClientRect();
+              return { left: r.left, top: r.top, width: r.width, height: r.height, el };
+            });
+          }
+          if (sec.reversed) items = items.slice().reverse(); // al subir: der→izq
+          const lastI = items.length - 1;
+          const period = mode === "invite" ? 720 : 440; // ms por elemento
+          const ph = (performance.now() - sec.t0) / period;
+          const i = Math.min(Math.max(Math.floor(ph), 0), lastI);
+          if (ph >= lastI + (mode === "invite" ? 0.9 : 0.7)) sec.done = true;
+          const it = items[i];
+          if (active.flip && it.el) it.el.classList.add("coin-flip");
+          const cx = it.left + it.width / 2;
+          const frac = Math.min(Math.max(ph - i, 0), 1);
+          if (mode === "invite") {
+            // 2 toques hacia abajo sobre el control (invita a hacer click)
+            const dip = Math.abs(Math.sin(frac * Math.PI * 2)) * (it.height * 0.5 + 20);
+            return { x: cx, y: it.top - 4 + dip };
+          }
+          // salto: arco por encima del elemento
+          const a = Math.min(frac / 0.5, 1);
+          const amp = mode === "seg" ? it.height * 0.28 + 12 : it.height * 0.5 + 14;
+          return { x: cx, y: it.top + it.height / 2 - Math.sin(a * Math.PI) * amp };
+        }
+
         function updateGuidePos() {
           if (!host) return;
           const vw = window.innerWidth;
           const vh = window.innerHeight;
           const w = host.offsetWidth || 120;
-          // sección activa por umbral (entradas sin salto)
+          const now = performance.now();
+          const sy = window.scrollY;
+          if (sy > lastScrollY + 1) scrollDir = 1;
+          else if (sy < lastScrollY - 1) scrollDir = -1;
+          lastScrollY = sy;
+
+          // sección activa por orden de DOM (umbral 0.58)
           let active: GuideEntry = GUIDE[0];
           for (const g of GUIDE) {
-            if (g.jump) continue;
             const el = document.querySelector(g.sel);
             if (el && el.getBoundingClientRect().top <= vh * 0.58) active = g;
           }
-          // números: dispara el salto UNA VEZ al entrar la banda al foco y lo BLOQUEA hasta
-          // completar 165→6→4 (timeline de duración fija → no depende de la velocidad de scroll)
-          const statsEntry = GUIDE.find((g) => g.jump);
-          const sb = statsEntry ? document.querySelector(statsEntry.sel) : null;
-          const sbr = sb ? sb.getBoundingClientRect() : null;
-          const sbVisible = !!sbr && sbr.bottom > 0 && sbr.top < vh;
-          if (!sbVisible) {
-            jumpTriggered = false;
-            jumpDone = false; // banda fuera de vista → lista para la próxima visita
-          } else if (statsEntry && sbr) {
-            if (!jumpTriggered && !jumpDone && sbr.top < vh * 0.72 && sbr.bottom > vh * 0.18) {
-              jumpTriggered = true;
-              jumpStartT = performance.now();
-            }
-            if (jumpTriggered && !jumpDone) active = statsEntry; // bloqueo hasta completar
-          }
-          let t: { x: number; y: number } | null = null;
-          if (active.jump) {
-            const els = Array.from(document.querySelectorAll(active.jump));
-            if (els.length) {
-              const period = 420; // ms por número
-              const lastI = els.length - 1;
-              const ph = (performance.now() - jumpStartT) / period; // 0 = primer número (izq)
-              const i = Math.min(Math.floor(ph), lastI); // 165 → 6 → 4
-              if (ph >= lastI + 0.7) jumpDone = true; // completó + breve hold en el 4
-              const frac = ph - i;
-              const a = Math.min(frac / 0.5, 1); // arco suave al transicionar a cada número
-              const r = els[i].getBoundingClientRect();
-              const hop = -Math.sin(a * Math.PI) * (r.height * 0.5 + 14);
-              t = { x: r.left + r.width / 2, y: r.top + r.height / 2 + hop };
+          // override: una sección "especial" en la ventana de foco toma el control para
+          // ADELANTARSE al usuario; arma su timeline una sola vez. Los saltos se adelantan
+          // más (0.72); los amagos esperan a estar más en pantalla (0.5).
+          let armed: GuideEntry | null = null;
+          for (const g of GUIDE) {
+            if (!(g.jump || g.seg || g.invite)) continue;
+            const el = document.querySelector(g.sel);
+            if (!el) continue;
+            const r = el.getBoundingClientRect();
+            const lead = g.invite ? 0.5 : 0.72;
+            if (r.top < vh * lead && r.bottom > vh * 0.18) {
+              armed = g;
+              break;
             }
           }
-          if (!t) {
-            const anchorEl = document.querySelector(active.anchor ?? active.sel);
-            if (!anchorEl || !active.at) return;
-            t = active.at(anchorEl.getBoundingClientRect(), vw, vh);
+          if (armed) {
+            if (sec.key !== armed.key) {
+              clearFlips();
+              sec = { key: armed.key, t0: now, done: false, reversed: scrollDir < 0 };
+            }
+            active = armed;
+          } else if (sec.key) {
+            clearFlips();
+            sec = { key: "", t0: 0, done: false, reversed: false };
           }
+
+          // objetivo
+          let t: Vec | null = null;
+          const running =
+            !!(active.jump || active.seg || active.invite) &&
+            sec.key === active.key &&
+            !sec.done;
+          if (running) t = hopTarget(active);
+          if (!t && active.at) {
+            const a = document.querySelector(active.anchor ?? active.sel);
+            if (a) t = active.at(a.getBoundingClientRect(), vw, vh);
+          }
+          if (!t) return; // sin objetivo → mantiene la última posición (p.ej. salto ya hecho)
+
+          // mantener la moneda dentro del viewport
+          const pad = 6 + w / 2;
+          t = {
+            x: Math.max(pad, Math.min(vw - pad, t.x)),
+            y: Math.max(pad, Math.min(vh - pad, t.y)),
+          };
+
           const tx = t.x - w / 2;
           const ty = t.y - w / 2;
           if (!posInit) {
@@ -352,12 +458,12 @@ export default function CoinGuide() {
             curY = ty;
             posInit = true;
           }
-          // lerp + tope de velocidad → transiciones grandes suaves; durante el salto el tope
-          // sube para alcanzar números separados.
+          // lerp + tope de velocidad → transiciones grandes suaves; durante el salto/amago
+          // el tope sube para alcanzar elementos separados.
           let dx = (tx - curX) * 0.17;
           let dy = (ty - curY) * 0.17;
           const dist = Math.hypot(dx, dy);
-          const maxStep = active.jump && jumpTriggered ? 42 : 15;
+          const maxStep = running ? 42 : 15;
           if (dist > maxStep) {
             dx = (dx / dist) * maxStep;
             dy = (dy / dist) * maxStep;

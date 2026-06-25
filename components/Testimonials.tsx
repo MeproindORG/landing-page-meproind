@@ -4,7 +4,7 @@ import { TESTIMONIALS } from "@/lib/content";
 
 export default function Testimonials() {
   return (
-    <section className="section" style={{ background: "var(--panel)" }}>
+    <section className="section testimonials" style={{ background: "var(--panel)" }}>
       <div className="wrap">
         <Reveal className="shead center">
           <span className="eyebrow">Testimonios</span>

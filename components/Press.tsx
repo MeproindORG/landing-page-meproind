@@ -2,7 +2,7 @@ import Reveal from "./Reveal";
 
 export default function Press() {
   return (
-    <section className="section" style={{ background: "var(--canvas)" }}>
+    <section className="section press" style={{ background: "var(--canvas)" }}>
       <div className="wrap">
         <Reveal className="shead center">
           <span className="eyebrow">En la prensa</span>

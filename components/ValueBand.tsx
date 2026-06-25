@@ -3,6 +3,7 @@ import Reveal from "./Reveal";
 export default function ValueBand() {
   return (
     <section
+      className="valueband"
       style={{
         background: "var(--dark)",
         color: "#fff",
