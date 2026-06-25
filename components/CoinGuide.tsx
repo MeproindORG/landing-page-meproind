@@ -40,7 +40,7 @@ export default function CoinGuide() {
         camera.lookAt(0, 0, 0);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
         renderer.setSize(size(), size());
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.0;
@@ -77,11 +77,11 @@ export default function CoinGuide() {
             font,
             size: 1,
             height: 0.04,
-            curveSegments: 10,
+            curveSegments: 6,
             bevelEnabled: true,
             bevelThickness: 0.02,
             bevelSize: 0.016,
-            bevelSegments: 3,
+            bevelSegments: 2,
           });
           tg.computeBoundingBox();
           const bb = tg.boundingBox!;
@@ -271,6 +271,88 @@ export default function CoinGuide() {
         };
         document.addEventListener("visibilitychange", onVis);
 
+        // ---- seguimiento por scroll: la moneda se posiciona según la sección ----
+        // sel = sección (para detectar la activa); anchor = elemento de referencia
+        // (opcional); at(rect, vw, vh) = centro objetivo de la moneda en px de viewport.
+        type GuideEntry = {
+          sel: string;
+          anchor?: string;
+          jump?: string;
+          when?: (r: DOMRect, vw: number, vh: number) => boolean; // tiene prioridad si true
+          at?: (r: DOMRect, vw: number, vh: number) => { x: number; y: number };
+        };
+        const GUIDE: GuideEntry[] = [
+          // inicio: arriba-derecha, a la altura de la cara / lado "Cotizar"
+          { sel: ".hero", at: (_r, vw) => ({ x: vw - 95, y: 175 }) },
+          // video: abajo a la izquierda (hacia el borde), acompaña al video al subir
+          { sel: ".herovid", anchor: ".herovid-frame", at: (r) => ({ x: 75, y: r.bottom - 50 }) },
+          // números: salta sobre cada número (+165, +6, 4) mientras la banda está arriba-centro
+          {
+            sel: ".statband",
+            jump: ".statband .stat",
+            when: (r, _vw, vh) => r.top > vh * 0.05 && r.top < vh * 0.6,
+          },
+          // PlanetGOLD: a la derecha del texto
+          { sel: ".trust", anchor: ".planet-stat", at: (r, vw) => ({ x: Math.min(r.right + 72, vw - 48), y: r.top + r.height * 0.4 }) },
+        ];
+        let curX = 0;
+        let curY = 0;
+        let posInit = false;
+        let prevActive: GuideEntry | null = null;
+        let jumpStartT = 0;
+        function updateGuidePos() {
+          const vw = window.innerWidth;
+          const vh = window.innerHeight;
+          // 1) sección activa por umbral (0.58 → guía un poco adelante, sin pasarse)
+          let active: GuideEntry = GUIDE[0];
+          for (const g of GUIDE) {
+            if (g.when) continue;
+            const el = document.querySelector(g.sel);
+            if (el && el.getBoundingClientRect().top <= vh * 0.58) active = g;
+          }
+          // 2) comportamientos especiales (when) tienen prioridad mientras se cumplen
+          for (const g of GUIDE) {
+            if (!g.when) continue;
+            const el = document.querySelector(g.sel);
+            if (el && g.when(el.getBoundingClientRect(), vw, vh)) active = g;
+          }
+          // al ENTRAR a una sección con salto, reinicia el ciclo (empieza en el 1.º = izq)
+          if (active !== prevActive) {
+            if (active.jump) jumpStartT = performance.now();
+            prevActive = active;
+          }
+          let t: { x: number; y: number } | null = null;
+          if (active.jump) {
+            const els = Array.from(document.querySelectorAll(active.jump));
+            if (els.length) {
+              const period = 600; // ms por número (más pausado = más sutil)
+              const ph = (performance.now() - jumpStartT) / period; // 0 = primer número (izq)
+              const i = Math.min(Math.floor(ph), els.length - 1); // 165 → 6 → 4 y se queda en 4
+              const frac = ph - i; // arco suave al transicionar a cada número (se satura en el último)
+              const a = Math.min(frac / 0.45, 1);
+              const r = els[i].getBoundingClientRect();
+              const hop = -Math.sin(a * Math.PI) * (r.height * 0.45 + 12);
+              t = { x: r.left + r.width / 2, y: r.top + r.height / 2 + hop };
+            }
+          }
+          if (!t) {
+            const anchorEl = document.querySelector(active.anchor ?? active.sel);
+            if (!anchorEl || !active.at) return;
+            t = active.at(anchorEl.getBoundingClientRect(), vw, vh);
+          }
+          const w = host.offsetWidth || 120;
+          const tx = t.x - w / 2;
+          const ty = t.y - w / 2;
+          if (!posInit) {
+            curX = tx;
+            curY = ty;
+            posInit = true;
+          }
+          curX += (tx - curX) * 0.17; // suave (la optimización ya quitó el lag)
+          curY += (ty - curY) * 0.17;
+          host.style.transform = `translate(${Math.round(curX)}px, ${Math.round(curY)}px)`;
+        }
+
         function loop() {
           raf = requestAnimationFrame(loop);
           const now = performance.now();
@@ -278,8 +360,10 @@ export default function CoinGuide() {
           lastT = now;
           if (!visible) return;
           coinGroup.rotation.y += dt * 1.05;
+          updateGuidePos();
           renderer.render(scene, camera);
         }
+        updateGuidePos(); // posición inicial (también para reduce-motion)
         renderer.render(scene, camera);
         if (!reduce) loop();
 

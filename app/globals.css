@@ -95,7 +95,7 @@ header.scrolled{background:rgba(21,18,14,.88);backdrop-filter:blur(12px);padding
 .planet-stat b{font-weight:700;color:#b8860b}
 .planet-stat .o{font-weight:800;color:var(--o)}
 /* Moneda guia 3D — overlay fijo por encima de todo, no bloquea interaccion */
-.coin-guide{position:fixed;top:82px;right:26px;width:clamp(92px,8.5vw,132px);height:clamp(92px,8.5vw,132px);z-index:60;pointer-events:none;filter:drop-shadow(0 6px 8px rgba(0,0,0,.28))}
+.coin-guide{position:fixed;top:0;left:0;width:clamp(92px,8.5vw,132px);height:clamp(92px,8.5vw,132px);z-index:60;pointer-events:none;filter:drop-shadow(0 6px 8px rgba(0,0,0,.28));will-change:transform;transform:translate(calc(100vw - 160px),200px)}
 .coin-guide::after{content:"";position:absolute;left:50%;bottom:1px;transform:translateX(-50%);width:58%;height:12px;border-radius:50%;background:radial-gradient(ellipse,rgba(0,0,0,.42),rgba(0,0,0,0) 72%);filter:blur(2px);z-index:0}
 .coin-guide canvas{width:100%!important;height:100%!important;display:block;position:relative;z-index:1}
 /* Carrusel full-bleed (no interactivo): crossfade automatico + texto de impacto */
