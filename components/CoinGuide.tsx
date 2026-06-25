@@ -294,9 +294,10 @@ export default function CoinGuide() {
         let curY = 0;
         let posInit = false;
         let jumpStartT = 0;
-        let jumpArmed = false;
+        let jumpTriggered = false;
         let jumpDone = false;
         function updateGuidePos() {
+          if (!host) return;
           const vw = window.innerWidth;
           const vh = window.innerHeight;
           const w = host.offsetWidth || 120;
@@ -307,45 +308,36 @@ export default function CoinGuide() {
             const el = document.querySelector(g.sel);
             if (el && el.getBoundingClientRect().top <= vh * 0.58) active = g;
           }
-          // números: activa al entrar al foco y BLOQUEA hasta completar 165→6→4
+          // números: dispara el salto UNA VEZ al entrar la banda al foco y lo BLOQUEA hasta
+          // completar 165→6→4 (timeline de duración fija → no depende de la velocidad de scroll)
           const statsEntry = GUIDE.find((g) => g.jump);
           const sb = statsEntry ? document.querySelector(statsEntry.sel) : null;
           const sbr = sb ? sb.getBoundingClientRect() : null;
           const sbVisible = !!sbr && sbr.bottom > 0 && sbr.top < vh;
           if (!sbVisible) {
-            jumpArmed = false;
+            jumpTriggered = false;
             jumpDone = false; // banda fuera de vista → lista para la próxima visita
-          }
-          if (statsEntry && sbr) {
-            const inZone = !jumpDone && sbr.top < vh * 0.72 && sbr.bottom > vh * 0.15;
-            if (inZone || (jumpArmed && !jumpDone && sbVisible)) active = statsEntry;
+          } else if (statsEntry && sbr) {
+            if (!jumpTriggered && !jumpDone && sbr.top < vh * 0.72 && sbr.bottom > vh * 0.18) {
+              jumpTriggered = true;
+              jumpStartT = performance.now();
+            }
+            if (jumpTriggered && !jumpDone) active = statsEntry; // bloqueo hasta completar
           }
           let t: { x: number; y: number } | null = null;
           if (active.jump) {
             const els = Array.from(document.querySelectorAll(active.jump));
             if (els.length) {
-              const f = els[0].getBoundingClientRect();
-              const fcx = f.left + f.width / 2;
-              const fcy = f.top + f.height / 2;
-              if (!jumpArmed) {
-                // viaja al 1.º número; arma el ciclo cuando LLEGA cerca → 165→6→4 desde el inicio
-                if (Math.hypot(curX - (fcx - w / 2), curY - (fcy - w / 2)) < 50) {
-                  jumpStartT = performance.now();
-                  jumpArmed = true;
-                }
-                t = { x: fcx, y: fcy };
-              } else {
-                const period = 560; // ms por número
-                const lastI = els.length - 1;
-                const ph = (performance.now() - jumpStartT) / period;
-                const i = Math.min(Math.floor(ph), lastI);
-                if (ph >= lastI + 0.7) jumpDone = true; // completó + hold en el último (4)
-                const frac = ph - i;
-                const a = Math.min(frac / 0.45, 1);
-                const r = els[i].getBoundingClientRect();
-                const hop = -Math.sin(a * Math.PI) * (r.height * 0.45 + 12);
-                t = { x: r.left + r.width / 2, y: r.top + r.height / 2 + hop };
-              }
+              const period = 420; // ms por número
+              const lastI = els.length - 1;
+              const ph = (performance.now() - jumpStartT) / period; // 0 = primer número (izq)
+              const i = Math.min(Math.floor(ph), lastI); // 165 → 6 → 4
+              if (ph >= lastI + 0.7) jumpDone = true; // completó + breve hold en el 4
+              const frac = ph - i;
+              const a = Math.min(frac / 0.5, 1); // arco suave al transicionar a cada número
+              const r = els[i].getBoundingClientRect();
+              const hop = -Math.sin(a * Math.PI) * (r.height * 0.5 + 14);
+              t = { x: r.left + r.width / 2, y: r.top + r.height / 2 + hop };
             }
           }
           if (!t) {
@@ -365,7 +357,7 @@ export default function CoinGuide() {
           let dx = (tx - curX) * 0.17;
           let dy = (ty - curY) * 0.17;
           const dist = Math.hypot(dx, dy);
-          const maxStep = active.jump && jumpArmed ? 42 : 15;
+          const maxStep = active.jump && jumpTriggered ? 42 : 15;
           if (dist > maxStep) {
             dx = (dx / dist) * maxStep;
             dy = (dy / dist) * maxStep;
