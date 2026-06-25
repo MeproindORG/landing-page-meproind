@@ -277,8 +277,7 @@ export default function CoinGuide() {
         type GuideEntry = {
           sel: string;
           anchor?: string;
-          jump?: string;
-          when?: (r: DOMRect, vw: number, vh: number) => boolean; // tiene prioridad si true
+          jump?: string; // selector de elementos sobre los que la moneda salta (izq→der)
           at?: (r: DOMRect, vw: number, vh: number) => { x: number; y: number };
         };
         const GUIDE: GuideEntry[] = [
@@ -286,53 +285,67 @@ export default function CoinGuide() {
           { sel: ".hero", at: (_r, vw) => ({ x: vw - 95, y: 175 }) },
           // video: abajo a la izquierda (hacia el borde), acompaña al video al subir
           { sel: ".herovid", anchor: ".herovid-frame", at: (r) => ({ x: 75, y: r.bottom - 50 }) },
-          // números: salta sobre cada número (+165, +6, 4) mientras la banda está arriba-centro
-          {
-            sel: ".statband",
-            jump: ".statband .stat",
-            when: (r, _vw, vh) => r.top > vh * 0.05 && r.top < vh * 0.6,
-          },
+          // números: salta sobre cada número (+165 → +6 → 4); el ciclo se bloquea hasta completar
+          { sel: ".statband", jump: ".statband .stat" },
           // PlanetGOLD: a la derecha del texto
           { sel: ".trust", anchor: ".planet-stat", at: (r, vw) => ({ x: Math.min(r.right + 72, vw - 48), y: r.top + r.height * 0.4 }) },
         ];
         let curX = 0;
         let curY = 0;
         let posInit = false;
-        let prevActive: GuideEntry | null = null;
         let jumpStartT = 0;
+        let jumpArmed = false;
+        let jumpDone = false;
         function updateGuidePos() {
           const vw = window.innerWidth;
           const vh = window.innerHeight;
-          // 1) sección activa por umbral (0.58 → guía un poco adelante, sin pasarse)
+          const w = host.offsetWidth || 120;
+          // sección activa por umbral (entradas sin salto)
           let active: GuideEntry = GUIDE[0];
           for (const g of GUIDE) {
-            if (g.when) continue;
+            if (g.jump) continue;
             const el = document.querySelector(g.sel);
             if (el && el.getBoundingClientRect().top <= vh * 0.58) active = g;
           }
-          // 2) comportamientos especiales (when) tienen prioridad mientras se cumplen
-          for (const g of GUIDE) {
-            if (!g.when) continue;
-            const el = document.querySelector(g.sel);
-            if (el && g.when(el.getBoundingClientRect(), vw, vh)) active = g;
+          // números: activa al entrar al foco y BLOQUEA hasta completar 165→6→4
+          const statsEntry = GUIDE.find((g) => g.jump);
+          const sb = statsEntry ? document.querySelector(statsEntry.sel) : null;
+          const sbr = sb ? sb.getBoundingClientRect() : null;
+          const sbVisible = !!sbr && sbr.bottom > 0 && sbr.top < vh;
+          if (!sbVisible) {
+            jumpArmed = false;
+            jumpDone = false; // banda fuera de vista → lista para la próxima visita
           }
-          // al ENTRAR a una sección con salto, reinicia el ciclo (empieza en el 1.º = izq)
-          if (active !== prevActive) {
-            if (active.jump) jumpStartT = performance.now();
-            prevActive = active;
+          if (statsEntry && sbr) {
+            const inZone = !jumpDone && sbr.top < vh * 0.72 && sbr.bottom > vh * 0.15;
+            if (inZone || (jumpArmed && !jumpDone && sbVisible)) active = statsEntry;
           }
           let t: { x: number; y: number } | null = null;
           if (active.jump) {
             const els = Array.from(document.querySelectorAll(active.jump));
             if (els.length) {
-              const period = 600; // ms por número (más pausado = más sutil)
-              const ph = (performance.now() - jumpStartT) / period; // 0 = primer número (izq)
-              const i = Math.min(Math.floor(ph), els.length - 1); // 165 → 6 → 4 y se queda en 4
-              const frac = ph - i; // arco suave al transicionar a cada número (se satura en el último)
-              const a = Math.min(frac / 0.45, 1);
-              const r = els[i].getBoundingClientRect();
-              const hop = -Math.sin(a * Math.PI) * (r.height * 0.45 + 12);
-              t = { x: r.left + r.width / 2, y: r.top + r.height / 2 + hop };
+              const f = els[0].getBoundingClientRect();
+              const fcx = f.left + f.width / 2;
+              const fcy = f.top + f.height / 2;
+              if (!jumpArmed) {
+                // viaja al 1.º número; arma el ciclo cuando LLEGA cerca → 165→6→4 desde el inicio
+                if (Math.hypot(curX - (fcx - w / 2), curY - (fcy - w / 2)) < 50) {
+                  jumpStartT = performance.now();
+                  jumpArmed = true;
+                }
+                t = { x: fcx, y: fcy };
+              } else {
+                const period = 560; // ms por número
+                const lastI = els.length - 1;
+                const ph = (performance.now() - jumpStartT) / period;
+                const i = Math.min(Math.floor(ph), lastI);
+                if (ph >= lastI + 0.7) jumpDone = true; // completó + hold en el último (4)
+                const frac = ph - i;
+                const a = Math.min(frac / 0.45, 1);
+                const r = els[i].getBoundingClientRect();
+                const hop = -Math.sin(a * Math.PI) * (r.height * 0.45 + 12);
+                t = { x: r.left + r.width / 2, y: r.top + r.height / 2 + hop };
+              }
             }
           }
           if (!t) {
@@ -340,7 +353,6 @@ export default function CoinGuide() {
             if (!anchorEl || !active.at) return;
             t = active.at(anchorEl.getBoundingClientRect(), vw, vh);
           }
-          const w = host.offsetWidth || 120;
           const tx = t.x - w / 2;
           const ty = t.y - w / 2;
           if (!posInit) {
@@ -348,8 +360,18 @@ export default function CoinGuide() {
             curY = ty;
             posInit = true;
           }
-          curX += (tx - curX) * 0.17; // suave (la optimización ya quitó el lag)
-          curY += (ty - curY) * 0.17;
+          // lerp + tope de velocidad → transiciones grandes suaves; durante el salto el tope
+          // sube para alcanzar números separados.
+          let dx = (tx - curX) * 0.17;
+          let dy = (ty - curY) * 0.17;
+          const dist = Math.hypot(dx, dy);
+          const maxStep = active.jump && jumpArmed ? 42 : 15;
+          if (dist > maxStep) {
+            dx = (dx / dist) * maxStep;
+            dy = (dy / dist) * maxStep;
+          }
+          curX += dx;
+          curY += dy;
           host.style.transform = `translate(${Math.round(curX)}px, ${Math.round(curY)}px)`;
         }
 
