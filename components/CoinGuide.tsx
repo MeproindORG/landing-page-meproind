@@ -289,6 +289,7 @@ export default function CoinGuide() {
           invite?: string;
           flip?: boolean;
           drop?: boolean; // al entrar (bajando): planea a la izq-arriba y cae con rebote
+          roll?: boolean; // rueda (eje Z) mientras viaja hacia esta sección
         };
         const GUIDE: GuideEntry[] = [
           // 1 inicio — arriba-derecha, a la altura de la cara / lado "Cotizar"
@@ -299,8 +300,8 @@ export default function CoinGuide() {
           { key: "stats", sel: ".statband", jump: ".statband .stat" },
           // 4 PlanetGOLD — a la derecha de la frase
           { key: "planet", sel: ".trust", anchor: ".planet-stat", at: (r, vw) => ({ x: Math.min(r.right + 70, vw - 80), y: r.top + r.height * 0.42 }) },
-          // 5 carrusel — arriba-derecha (sigue junto a "según PlanetGOLD")
-          { key: "carousel", sel: ".carousel", at: (r, vw, vh) => ({ x: vw - 90, y: Math.max(r.top + 70, vh * 0.16) }) },
+          // 5 carrusel — RUEDA hasta posarse encima de la barra naranja del caption
+          { key: "carousel", sel: ".carousel", anchor: ".carousel-cap-text", roll: true, at: (r) => ({ x: r.left + 40, y: r.top - 75 }) },
           // 6 ¿Por qué Meproind? — gira a la izquierda, parte baja, junto a "Mesa MEPROIND"
           { key: "why", sel: "#comparativa", anchor: ".vcard.win", at: (r) => ({ x: r.left - 18, y: r.top + r.height * 0.42 }) },
           // 7 método tradicional — al medio-izquierda de los 2 renglones del título
@@ -347,9 +348,10 @@ export default function CoinGuide() {
         let enterFrom: Vec = { x: 0, y: 0 };
         let enterPlayedKey = ""; // sección cuya caída ya se reprodujo en esta visita
         let enterEntry: GuideEntry | null = null; // sección destino de la caída (fija)
-        // rodadura (solo durante la entrada inicio→video): se acopla al avance horizontal
+        // rodadura: se acopla al avance horizontal (entrada inicio→video + secciones roll)
         let coinVX = 0; // velocidad horizontal (px/frame)
         let rollZ = 0; // ángulo de rodadura en el plano (eje Z, como rueda)
+        let activeRoll = false; // la sección activa pide rodar al viajar hacia ella
 
         const clearFlips = () => {
           document
@@ -486,6 +488,7 @@ export default function CoinGuide() {
             enterEntry = active; // destino fijo de la caída
           }
           prevActiveKey = active.key;
+          activeRoll = !!active.roll; // ¿esta sección quiere que ruede al llegar?
 
           if (enterRunning && enterEntry) {
             const DUR = 1500; // más lento → se aprecia el recorrido + la caída
@@ -586,13 +589,20 @@ export default function CoinGuide() {
           const TAU = Math.PI * 2;
           const Rpx = (host!.offsetWidth || 120) * 0.42; // radio aprox. de la moneda en px
           const rotY = coinGroup.rotation.y;
+          const traveling = Math.abs(coinVX) > 0.6;
           if (enterRunning) {
-            if (Math.abs(coinVX) > 0.6) rollZ -= coinVX / Rpx; // rueda al planear
-            else rollZ += (Math.round(rollZ / TAU) * TAU - rollZ) * 0.16; // nivela al caer
-            coinGroup.rotation.y += (Math.round(rotY / TAU) * TAU - rotY) * 0.14; // cara al frente
+            // entrada inicio→video: rueda al planear a la izquierda, cae con cara al frente
+            if (traveling) rollZ -= coinVX / Rpx;
+            else rollZ += (Math.round(rollZ / TAU) * TAU - rollZ) * 0.16;
+            coinGroup.rotation.y += (Math.round(rotY / TAU) * TAU - rotY) * 0.14;
+          } else if (activeRoll && traveling) {
+            // transición "rueda" (p.ej. PlanetGOLD→carrusel): rueda mientras viaja hacia ella
+            rollZ -= coinVX / Rpx;
+            coinGroup.rotation.y += (Math.round(rotY / TAU) * TAU - rotY) * 0.14;
           } else {
-            coinGroup.rotation.y += dt * 1.05; // giro de reposo normal
-            rollZ += (Math.round(rollZ / TAU) * TAU - rollZ) * 0.16; // rueda nivelada
+            // reposo normal (cualquier otra sección): giro de reposo (eje Y), rueda nivelada
+            coinGroup.rotation.y += dt * 1.05;
+            rollZ += (Math.round(rollZ / TAU) * TAU - rollZ) * 0.16;
           }
           coinGroup.rotation.z = rollZ;
           renderer.render(scene, camera);
