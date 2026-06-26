@@ -561,11 +561,11 @@ export default function CoinGuide() {
             lastRestKey = active.key;
             if (!reduce && movedSection && !enterRunning && !travelRunning) {
               const d = Math.hypot(tx - curX, ty - curY);
-              if (d > 12) {
+              if (d > 8) {
                 travelRunning = true;
                 travelT0 = now;
                 travelFrom = { x: curX, y: curY };
-                travelDur = Math.max(620, Math.min(d * 1.4, 1150)); // a mayor distancia, más lento
+                travelDur = Math.max(1150, Math.min(d * 1.9, 1950)); // lento → se aprecia el arco
               }
             }
           } else {
@@ -592,7 +592,7 @@ export default function CoinGuide() {
                 nx = -nx;
                 ny = -ny;
               }
-              const bulge = Math.max(70, Math.min(len * 0.42, 240));
+              const bulge = Math.max(150, Math.min(len * 0.52, 360)); // C/media luna marcada
               const cx = mx + nx * bulge;
               const cy = my + ny * bulge;
               // bézier cuadrática A→C→B con easing in-out (acelera y desacelera)
@@ -610,8 +610,8 @@ export default function CoinGuide() {
 
           // lerp + tope de velocidad → transiciones grandes suaves; durante el salto/amago
           // el tope sube para alcanzar elementos separados.
-          let dx = (tx - curX) * 0.17;
-          let dy = (ty - curY) * 0.17;
+          let dx = (tx - curX) * 0.12;
+          let dy = (ty - curY) * 0.12;
           const dist = Math.hypot(dx, dy);
           const maxStep = running ? 42 : 15;
           if (dist > maxStep) {
@@ -635,7 +635,7 @@ export default function CoinGuide() {
           // RODAR: el viaje horizontal acelera el giro (en su sentido) y la inclina; al
           // detenerse, la inclinación vuelve a 0 y queda el giro suave de siempre.
           const baseSpin = dt * (enterRunning ? 1.95 : 1.05); // gira más al caer
-          const roll = Math.max(-0.45, Math.min(0.45, coinVX * 0.012));
+          const roll = Math.max(-0.5, Math.min(0.5, coinVX * 0.02));
           coinGroup.rotation.y += baseSpin + roll;
           const tTilt = Math.max(-0.36, Math.min(0.36, -coinVX * 0.016));
           tiltZ += (tTilt - tiltZ) * 0.14;
