@@ -349,6 +349,12 @@ export default function CoinGuide() {
         // "rodar": acopla el giro al desplazamiento horizontal de la moneda
         let coinVX = 0; // velocidad horizontal (px/frame)
         let tiltZ = 0; // inclinación actual (banca al rodar), suavizada
+        // viaje en arco (media luna) al cambiar de sección de reposo — más lento/visible
+        let travelRunning = false;
+        let travelT0 = 0;
+        let travelDur = 800;
+        let travelFrom: Vec = { x: 0, y: 0 };
+        let lastRestKey = "";
 
         const clearFlips = () => {
           document
@@ -358,6 +364,8 @@ export default function CoinGuide() {
 
         // easings para la entrada: cúbico (planeo que desacelera) + rebote (aterrizaje)
         const easeOutCubic = (p: number) => 1 - Math.pow(1 - p, 3);
+        const easeInOutCubic = (p: number) =>
+          p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
         const easeOutBounce = (p: number) => {
           const n1 = 7.5625;
           const d1 = 2.75;
@@ -544,6 +552,62 @@ export default function CoinGuide() {
             curY = ty;
             posInit = true;
           }
+
+          // ── viaje en ARCO (media luna) + más lento al cambiar de sección de reposo ──
+          // (los saltos/amagos llevan su propio recorrido; la caída del video, su entrada)
+          const isRest = !running;
+          if (isRest && posInit) {
+            const movedSection = active.key !== lastRestKey;
+            lastRestKey = active.key;
+            if (!reduce && movedSection && !enterRunning && !travelRunning) {
+              const d = Math.hypot(tx - curX, ty - curY);
+              if (d > 12) {
+                travelRunning = true;
+                travelT0 = now;
+                travelFrom = { x: curX, y: curY };
+                travelDur = Math.max(620, Math.min(d * 1.4, 1150)); // a mayor distancia, más lento
+              }
+            }
+          } else {
+            lastRestKey = active.key; // un salto en curso cancela cualquier viaje
+            travelRunning = false;
+          }
+          if (travelRunning && isRest) {
+            const e = (now - travelT0) / travelDur;
+            if (e >= 1) {
+              travelRunning = false; // terminó → el lerp normal afina el resto
+            } else {
+              const a = easeInOutCubic(e);
+              const ax = travelFrom.x;
+              const ay = travelFrom.y;
+              const mx = (ax + tx) / 2;
+              const my = (ay + ty) / 2;
+              const vdx = tx - ax;
+              const vdy = ty - ay;
+              const len = Math.hypot(vdx, vdy) || 1;
+              // perpendicular que abulta la trayectoria HACIA ARRIBA (media luna)
+              let nx = -vdy / len;
+              let ny = vdx / len;
+              if (ny > 0) {
+                nx = -nx;
+                ny = -ny;
+              }
+              const bulge = Math.max(70, Math.min(len * 0.42, 240));
+              const cx = mx + nx * bulge;
+              const cy = my + ny * bulge;
+              // bézier cuadrática A→C→B con easing in-out (acelera y desacelera)
+              const u = 1 - a;
+              let qx = u * u * ax + 2 * u * a * cx + a * a * tx;
+              let qy = u * u * ay + 2 * u * a * cy + a * a * ty;
+              qx = Math.max(8, Math.min(vw - w - 8, qx));
+              qy = Math.max(8, Math.min(vh - w - 8, qy));
+              curX = qx;
+              curY = qy;
+              host.style.transform = `translate(${Math.round(qx)}px, ${Math.round(qy)}px)`;
+              return; // mientras dura el arco, omite el lerp
+            }
+          }
+
           // lerp + tope de velocidad → transiciones grandes suaves; durante el salto/amago
           // el tope sube para alcanzar elementos separados.
           let dx = (tx - curX) * 0.17;
