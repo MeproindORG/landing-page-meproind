@@ -346,6 +346,7 @@ export default function CoinGuide() {
         let enterT0 = 0;
         let enterFrom: Vec = { x: 0, y: 0 };
         let enterPlayedKey = ""; // sección cuya caída ya se reprodujo en esta visita
+        let enterEntry: GuideEntry | null = null; // sección destino de la caída (fija)
         // "rodar": acopla el giro al desplazamiento horizontal de la moneda
         let coinVX = 0; // velocidad horizontal (px/frame)
         let tiltZ = 0; // inclinación actual (banca al rodar), suavizada
@@ -456,21 +457,26 @@ export default function CoinGuide() {
               break;
             }
           }
-          if (armed) {
-            if (sec.key !== armed.key) {
+          // mientras dura la caída no se arma ninguna sección especial (si no, el salto
+          // de los números arrancaría tarde y quedaría a medias al terminar la caída)
+          if (!enterRunning) {
+            if (armed) {
+              if (sec.key !== armed.key) {
+                clearFlips();
+                sec = { key: armed.key, t0: now, done: false, reversed: scrollDir < 0 };
+              }
+              active = armed;
+            } else if (sec.key) {
               clearFlips();
-              sec = { key: armed.key, t0: now, done: false, reversed: scrollDir < 0 };
+              sec = { key: "", t0: 0, done: false, reversed: false };
             }
-            active = armed;
-          } else if (sec.key) {
-            clearFlips();
-            sec = { key: "", t0: 0, done: false, reversed: false };
           }
 
           // ── entrada "caída + rebote": al pasar (bajando) a una sección con drop ──
-          if (enterPlayedKey && active.key !== enterPlayedKey) {
-            enterPlayedKey = ""; // salió de la sección → se rearma para la próxima visita
-            enterRunning = false;
+          // OJO: una vez iniciada se completa ENTERA (no se cancela aunque la sección
+          // activa ya pase a los números), por eso se fija `enterEntry` como destino.
+          if (!enterRunning && enterPlayedKey && active.key !== enterPlayedKey) {
+            enterPlayedKey = ""; // ya cayó y salió → se rearma para la próxima visita
           }
           if (
             !reduce &&
@@ -485,21 +491,22 @@ export default function CoinGuide() {
             enterT0 = now;
             enterFrom = { x: curX, y: curY };
             enterPlayedKey = active.key;
+            enterEntry = active; // destino fijo de la caída
           }
           prevActiveKey = active.key;
 
-          if (enterRunning) {
-            const DUR = 1100;
+          if (enterRunning && enterEntry) {
+            const DUR = 1500; // más lento → se aprecia el recorrido + la caída
             const e = (now - enterT0) / DUR;
-            const aEl = document.querySelector(active.anchor ?? active.sel);
-            if (e >= 1 || active.key !== enterPlayedKey || !aEl || !active.at) {
+            const aEl = document.querySelector(enterEntry.anchor ?? enterEntry.sel);
+            if (e >= 1 || !aEl || !enterEntry.at) {
               enterRunning = false; // terminó → continúa el lerp normal (ya está en reposo)
             } else {
-              const rc = active.at(aEl.getBoundingClientRect(), vw, vh);
+              const rc = enterEntry.at(aEl.getBoundingClientRect(), vw, vh);
               const rex = rc.x - w / 2;
               const rey = rc.y - w / 2;
               const wy = Math.max(rey - 320, 8); // punto alto a la izquierda, antes de caer
-              const tA = 0.42; // 1er tiempo: planeo en arco hacia la izquierda-arriba
+              const tA = 0.5; // 1er tiempo (planeo der→izq) = la mitad del recorrido
               let px: number;
               let py: number;
               let sqX = 1;
