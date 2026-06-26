@@ -346,6 +346,9 @@ export default function CoinGuide() {
         let enterT0 = 0;
         let enterFrom: Vec = { x: 0, y: 0 };
         let enterPlayedKey = ""; // sección cuya caída ya se reprodujo en esta visita
+        // "rodar": acopla el giro al desplazamiento horizontal de la moneda
+        let coinVX = 0; // velocidad horizontal (px/frame)
+        let tiltZ = 0; // inclinación actual (banca al rodar), suavizada
 
         const clearFlips = () => {
           document
@@ -562,8 +565,17 @@ export default function CoinGuide() {
           const dt = Math.min((now - lastT) / 1000, 0.05);
           lastT = now;
           if (!visible) return;
-          coinGroup.rotation.y += dt * (enterRunning ? 1.95 : 1.05); // gira más al caer
-          updateGuidePos();
+          const beforeX = curX;
+          updateGuidePos(); // mueve curX/curY (puede salir antes en saltos/caída)
+          coinVX = posInit ? curX - beforeX : 0; // desplazamiento horizontal este frame
+          // RODAR: el viaje horizontal acelera el giro (en su sentido) y la inclina; al
+          // detenerse, la inclinación vuelve a 0 y queda el giro suave de siempre.
+          const baseSpin = dt * (enterRunning ? 1.95 : 1.05); // gira más al caer
+          const roll = Math.max(-0.45, Math.min(0.45, coinVX * 0.012));
+          coinGroup.rotation.y += baseSpin + roll;
+          const tTilt = Math.max(-0.36, Math.min(0.36, -coinVX * 0.016));
+          tiltZ += (tTilt - tiltZ) * 0.14;
+          coinGroup.rotation.z = tiltZ;
           renderer.render(scene, camera);
         }
         updateGuidePos(); // posición inicial (también para reduce-motion)
