@@ -59,9 +59,10 @@ header.scrolled{background:rgba(21,18,14,.88);backdrop-filter:blur(12px);padding
 /* hero full-bleed */
 .hero{position:relative;color:#fff;background-color:#15120e;padding:170px 0 100px;overflow:hidden}
 /* fondo borroso a sangre completa = ambiente/profundidad (no banda plana) */
-.hero::after{content:"";position:absolute;inset:0;z-index:0;background:url('/img/landing/hero-concentra.jpg') center/cover no-repeat;filter:blur(36px) brightness(.28) saturate(.3);transform:scale(1.18)}
-/* foto COMPLETA (contain) anclada a la derecha + degradado-sombra para el texto */
-.hero::before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(95deg,rgba(6,7,8,.97) 0%,rgba(6,7,8,.95) 49%,rgba(6,7,8,.85) 59%,rgba(6,7,8,.45) 68%,rgba(6,7,8,.12) 78%,rgba(6,7,8,0) 88%),url('/img/landing/hero-concentra.jpg') calc(100% + 250px) center/contain no-repeat;pointer-events:none}
+.hero::after{content:"";position:absolute;inset:0;z-index:0;background:url('/img/landing/hero-andrea.jpg') center/cover no-repeat;filter:blur(36px) brightness(.28) saturate(.3);transform:scale(1.18)}
+/* foto panorámica a sangre completa (cover) anclada a la derecha → persona a la
+   derecha, máquina/marca a la izquierda bajo el degradado; sin borde de contain */
+.hero::before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(95deg,rgba(6,7,8,.95) 0%,rgba(6,7,8,.9) 40%,rgba(6,7,8,.72) 53%,rgba(6,7,8,.32) 64%,rgba(6,7,8,.08) 75%,rgba(6,7,8,0) 86%),url('/img/landing/hero-andrea.jpg') right center/cover no-repeat;pointer-events:none}
 .hero .wrap{position:relative;z-index:2;width:100%;margin:0;max-width:none;padding-right:24px;padding-left:clamp(24px,calc((100vw - 1180px)*0.3),260px)}
 .hero h1{font-family:var(--font-fibra),var(--fdisp);font-weight:700;color:#fff;font-size:clamp(2rem,3.5vw,2.95rem);line-height:1.4;letter-spacing:-.02em}
 .hero h1 .accent{color:var(--o)}
@@ -318,7 +319,7 @@ footer ul a{font-size:.9rem;transition:color .2s} footer ul a:hover{color:var(--
 }
 @media(max-width:920px){
   .hero::after{display:none}
-  .hero::before{background:linear-gradient(168deg,rgba(15,18,14,.84) 0%,rgba(15,18,14,.5) 55%,rgba(15,18,14,.4) 100%),url('/img/landing/hero-concentra.jpg') center center/cover no-repeat}
+  .hero::before{background:linear-gradient(168deg,rgba(15,18,14,.88) 0%,rgba(15,18,14,.52) 52%,rgba(15,18,14,.4) 100%),url('/img/landing/hero-andrea.jpg') 74% center/cover no-repeat}
   .gold-wrap,.anat-wrap,.sim-grid{grid-template-columns:1fr;gap:28px}
   .statband .wrap{grid-template-columns:repeat(3,1fr);gap:26px}
   .vs{grid-template-columns:1fr}
