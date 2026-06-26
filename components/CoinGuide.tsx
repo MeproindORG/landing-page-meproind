@@ -293,8 +293,8 @@ export default function CoinGuide() {
         const GUIDE: GuideEntry[] = [
           // 1 inicio — arriba-derecha, a la altura de la cara / lado "Cotizar"
           { key: "hero", sel: ".hero", at: (_r, vw) => ({ x: vw - 95, y: 175 }) },
-          // 2 video — esquina inferior izquierda; entra con "caída + rebote"
-          { key: "video", sel: ".herovid", anchor: ".herovid-frame", drop: true, at: (r) => ({ x: 95, y: r.bottom - 58 }) },
+          // 2 video — esquina inferior izquierda; entra rodando en arco (como el resto)
+          { key: "video", sel: ".herovid", anchor: ".herovid-frame", at: (r) => ({ x: 95, y: r.bottom - 58 }) },
           // 3 números — salta +165 → +6 → 4 (el conteo ya arranca solo al entrar)
           { key: "stats", sel: ".statband", jump: ".statband .stat" },
           // 4 PlanetGOLD — a la derecha de la frase
@@ -349,7 +349,7 @@ export default function CoinGuide() {
         let enterEntry: GuideEntry | null = null; // sección destino de la caída (fija)
         // "rodar": acopla el giro al desplazamiento horizontal de la moneda
         let coinVX = 0; // velocidad horizontal (px/frame)
-        let tiltZ = 0; // inclinación actual (banca al rodar), suavizada
+        let rollZ = 0; // ángulo de rodadura en el plano (eje Z, como rueda)
         // viaje en arco (media luna) al cambiar de sección de reposo — más lento/visible
         let travelRunning = false;
         let travelT0 = 0;
@@ -639,14 +639,23 @@ export default function CoinGuide() {
           const beforeX = curX;
           updateGuidePos(); // mueve curX/curY (puede salir antes en saltos/caída)
           coinVX = posInit ? curX - beforeX : 0; // desplazamiento horizontal este frame
-          // RODAR: el viaje horizontal acelera el giro (en su sentido) y la inclina; al
-          // detenerse, la inclinación vuelve a 0 y queda el giro suave de siempre.
-          const baseSpin = dt * (enterRunning ? 1.95 : 1.05); // gira más al caer
-          const roll = Math.max(-0.5, Math.min(0.5, coinVX * 0.02));
-          coinGroup.rotation.y += baseSpin + roll;
-          const tTilt = Math.max(-0.36, Math.min(0.36, -coinVX * 0.016));
-          tiltZ += (tTilt - tiltZ) * 0.14;
-          coinGroup.rotation.z = tiltZ;
+          // Dos modos bien diferenciados:
+          //  • VIAJANDO → rueda en el PLANO (eje Z) acoplado al avance horizontal (sin
+          //    deslizamiento: ángulo = distancia/radio); la cara se mantiene al frente
+          //    (Y→múltiplo de 2π) para que se vea el $ rodando como una rueda.
+          //  • QUIETA → giro de reposo (eje Y, voltea mostrando ambas caras) y la rueda
+          //    se nivela (Z→múltiplo de 2π → cara derecha).
+          const TAU = Math.PI * 2;
+          const Rpx = (host!.offsetWidth || 120) * 0.42; // radio aprox. de la moneda en px
+          if (Math.abs(coinVX) > 0.6) {
+            rollZ -= coinVX / Rpx;
+            coinGroup.rotation.y +=
+              (Math.round(coinGroup.rotation.y / TAU) * TAU - coinGroup.rotation.y) * 0.12;
+          } else {
+            coinGroup.rotation.y += dt * 1.05;
+            rollZ += (Math.round(rollZ / TAU) * TAU - rollZ) * 0.12;
+          }
+          coinGroup.rotation.z = rollZ;
           renderer.render(scene, camera);
         }
         updateGuidePos(); // posición inicial (también para reduce-motion)
