@@ -293,8 +293,8 @@ export default function CoinGuide() {
         const GUIDE: GuideEntry[] = [
           // 1 inicio — arriba-derecha, a la altura de la cara / lado "Cotizar"
           { key: "hero", sel: ".hero", at: (_r, vw) => ({ x: vw - 95, y: 175 }) },
-          // 2 video — esquina inferior izquierda; entra rodando en arco (como el resto)
-          { key: "video", sel: ".herovid", anchor: ".herovid-frame", at: (r) => ({ x: 95, y: r.bottom - 58 }) },
+          // 2 video — rueda arriba-izquierda y CAE con rebote a la esquina inferior izq.
+          { key: "video", sel: ".herovid", anchor: ".herovid-frame", drop: true, at: (r) => ({ x: 95, y: r.bottom - 58 }) },
           // 3 números — salta +165 → +6 → 4 (el conteo ya arranca solo al entrar)
           { key: "stats", sel: ".statband", jump: ".statband .stat" },
           // 4 PlanetGOLD — a la derecha de la frase
@@ -347,15 +347,9 @@ export default function CoinGuide() {
         let enterFrom: Vec = { x: 0, y: 0 };
         let enterPlayedKey = ""; // sección cuya caída ya se reprodujo en esta visita
         let enterEntry: GuideEntry | null = null; // sección destino de la caída (fija)
-        // "rodar": acopla el giro al desplazamiento horizontal de la moneda
+        // rodadura (solo durante la entrada inicio→video): se acopla al avance horizontal
         let coinVX = 0; // velocidad horizontal (px/frame)
         let rollZ = 0; // ángulo de rodadura en el plano (eje Z, como rueda)
-        // viaje en arco (media luna) al cambiar de sección de reposo — más lento/visible
-        let travelRunning = false;
-        let travelT0 = 0;
-        let travelDur = 800;
-        let travelFrom: Vec = { x: 0, y: 0 };
-        let lastRestKey = "";
 
         const clearFlips = () => {
           document
@@ -365,8 +359,6 @@ export default function CoinGuide() {
 
         // easings para la entrada: cúbico (planeo que desacelera) + rebote (aterrizaje)
         const easeOutCubic = (p: number) => 1 - Math.pow(1 - p, 3);
-        const easeInOutCubic = (p: number) =>
-          p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
         const easeOutBounce = (p: number) => {
           const n1 = 7.5625;
           const d1 = 2.75;
@@ -560,65 +552,10 @@ export default function CoinGuide() {
             posInit = true;
           }
 
-          // ── viaje en ARCO (media luna) + más lento al cambiar de sección de reposo ──
-          // (los saltos/amagos llevan su propio recorrido; la caída del video, su entrada)
-          const isRest = !running;
-          if (isRest && posInit) {
-            const movedSection = active.key !== lastRestKey;
-            lastRestKey = active.key;
-            if (!reduce && movedSection && !enterRunning && !travelRunning) {
-              const d = Math.hypot(tx - curX, ty - curY);
-              if (d > 8) {
-                travelRunning = true;
-                travelT0 = now;
-                travelFrom = { x: curX, y: curY };
-                travelDur = Math.max(1150, Math.min(d * 1.9, 1950)); // lento → se aprecia el arco
-              }
-            }
-          } else {
-            lastRestKey = active.key; // un salto en curso cancela cualquier viaje
-            travelRunning = false;
-          }
-          if (travelRunning && isRest) {
-            const e = (now - travelT0) / travelDur;
-            if (e >= 1) {
-              travelRunning = false; // terminó → el lerp normal afina el resto
-            } else {
-              const a = easeInOutCubic(e);
-              const ax = travelFrom.x;
-              const ay = travelFrom.y;
-              const mx = (ax + tx) / 2;
-              const my = (ay + ty) / 2;
-              const vdx = tx - ax;
-              const vdy = ty - ay;
-              const len = Math.hypot(vdx, vdy) || 1;
-              // perpendicular que abulta la trayectoria HACIA ARRIBA (media luna)
-              let nx = -vdy / len;
-              let ny = vdx / len;
-              if (ny > 0) {
-                nx = -nx;
-                ny = -ny;
-              }
-              const bulge = Math.max(150, Math.min(len * 0.52, 360)); // C/media luna marcada
-              const cx = mx + nx * bulge;
-              const cy = my + ny * bulge;
-              // bézier cuadrática A→C→B con easing in-out (acelera y desacelera)
-              const u = 1 - a;
-              let qx = u * u * ax + 2 * u * a * cx + a * a * tx;
-              let qy = u * u * ay + 2 * u * a * cy + a * a * ty;
-              qx = Math.max(8, Math.min(vw - w - 8, qx));
-              qy = Math.max(8, Math.min(vh - w - 8, qy));
-              curX = qx;
-              curY = qy;
-              host.style.transform = `translate(${Math.round(qx)}px, ${Math.round(qy)}px)`;
-              return; // mientras dura el arco, omite el lerp
-            }
-          }
-
-          // lerp + tope de velocidad → transiciones grandes suaves; durante el salto/amago
-          // el tope sube para alcanzar elementos separados.
-          let dx = (tx - curX) * 0.12;
-          let dy = (ty - curY) * 0.12;
+          // lerp + tope de velocidad → transiciones suaves (comportamiento normal del
+          // resto de secciones; la entrada inicio→video tiene su propia caída arriba).
+          let dx = (tx - curX) * 0.17;
+          let dy = (ty - curY) * 0.17;
           const dist = Math.hypot(dx, dy);
           const maxStep = running ? 42 : 15;
           if (dist > maxStep) {
@@ -639,21 +576,23 @@ export default function CoinGuide() {
           const beforeX = curX;
           updateGuidePos(); // mueve curX/curY (puede salir antes en saltos/caída)
           coinVX = posInit ? curX - beforeX : 0; // desplazamiento horizontal este frame
-          // Dos modos bien diferenciados:
-          //  • VIAJANDO → rueda en el PLANO (eje Z) acoplado al avance horizontal (sin
-          //    deslizamiento: ángulo = distancia/radio); la cara se mantiene al frente
-          //    (Y→múltiplo de 2π) para que se vea el $ rodando como una rueda.
-          //  • QUIETA → giro de reposo (eje Y, voltea mostrando ambas caras) y la rueda
-          //    se nivela (Z→múltiplo de 2π → cara derecha).
+          // RODADURA solo en la entrada inicio→video:
+          //  • planeo a la izquierda (hay avance horizontal) → rueda en el PLANO (eje Z),
+          //    sin deslizamiento (ángulo = distancia/radio), con la cara al frente → se ve
+          //    como una rueda/moneda rodando.
+          //  • caída (sin avance) → cara al frente y la rueda se nivela para aterrizar
+          //    derecha; después llega el rebote (su squash lo pone la entrada).
+          // Resto del tiempo (cualquier otra sección): giro de reposo normal (eje Y).
           const TAU = Math.PI * 2;
           const Rpx = (host!.offsetWidth || 120) * 0.42; // radio aprox. de la moneda en px
-          if (Math.abs(coinVX) > 0.6) {
-            rollZ -= coinVX / Rpx;
-            coinGroup.rotation.y +=
-              (Math.round(coinGroup.rotation.y / TAU) * TAU - coinGroup.rotation.y) * 0.12;
+          const rotY = coinGroup.rotation.y;
+          if (enterRunning) {
+            if (Math.abs(coinVX) > 0.6) rollZ -= coinVX / Rpx; // rueda al planear
+            else rollZ += (Math.round(rollZ / TAU) * TAU - rollZ) * 0.16; // nivela al caer
+            coinGroup.rotation.y += (Math.round(rotY / TAU) * TAU - rotY) * 0.14; // cara al frente
           } else {
-            coinGroup.rotation.y += dt * 1.05;
-            rollZ += (Math.round(rollZ / TAU) * TAU - rollZ) * 0.12;
+            coinGroup.rotation.y += dt * 1.05; // giro de reposo normal
+            rollZ += (Math.round(rollZ / TAU) * TAU - rollZ) * 0.16; // rueda nivelada
           }
           coinGroup.rotation.z = rollZ;
           renderer.render(scene, camera);
