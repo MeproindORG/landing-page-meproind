@@ -23,7 +23,8 @@ export default function Comparativa() {
         <Reveal className="shead center">
           <span className="eyebrow">Por qué MEPROIND</span>
           <h2>
-            Más oro. Más años de vida. <span className="o">Cero químicos.</span>
+            Descubre la mejor manera de procesar{" "}
+            <span className="o">oro y otros minerales</span>
           </h2>
           <p className="lead" style={{ margin: "0 auto" }}>
             La diferencia entre recuperar el 70% y recuperar el 91% es la rentabilidad de
