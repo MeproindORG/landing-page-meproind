@@ -288,12 +288,13 @@ export default function CoinGuide() {
           seg?: number;
           invite?: string;
           flip?: boolean;
+          drop?: boolean; // al entrar (bajando): planea a la izq-arriba y cae con rebote
         };
         const GUIDE: GuideEntry[] = [
           // 1 inicio — arriba-derecha, a la altura de la cara / lado "Cotizar"
           { key: "hero", sel: ".hero", at: (_r, vw) => ({ x: vw - 95, y: 175 }) },
-          // 2 video — esquina inferior izquierda; acompaña al video
-          { key: "video", sel: ".herovid", anchor: ".herovid-frame", at: (r) => ({ x: 95, y: r.bottom - 58 }) },
+          // 2 video — esquina inferior izquierda; entra con "caída + rebote"
+          { key: "video", sel: ".herovid", anchor: ".herovid-frame", drop: true, at: (r) => ({ x: 95, y: r.bottom - 58 }) },
           // 3 números — salta +165 → +6 → 4 (el conteo ya arranca solo al entrar)
           { key: "stats", sel: ".statband", jump: ".statband .stat" },
           // 4 PlanetGOLD — a la derecha de la frase
@@ -339,11 +340,35 @@ export default function CoinGuide() {
         let scrollDir = 1; // +1 baja, -1 sube (para reproducir las animaciones al revés)
         // estado de la sección "especial" en curso (salto/amago)
         let sec = { key: "", t0: 0, done: false, reversed: false };
+        // estado de la animación de entrada "caída + rebote" (hero → video)
+        let prevActiveKey = "";
+        let enterRunning = false;
+        let enterT0 = 0;
+        let enterFrom: Vec = { x: 0, y: 0 };
+        let enterPlayedKey = ""; // sección cuya caída ya se reprodujo en esta visita
 
         const clearFlips = () => {
           document
             .querySelectorAll(".tcard.coin-flip")
             .forEach((e) => e.classList.remove("coin-flip"));
+        };
+
+        // easings para la entrada: cúbico (planeo que desacelera) + rebote (aterrizaje)
+        const easeOutCubic = (p: number) => 1 - Math.pow(1 - p, 3);
+        const easeOutBounce = (p: number) => {
+          const n1 = 7.5625;
+          const d1 = 2.75;
+          if (p < 1 / d1) return n1 * p * p;
+          if (p < 2 / d1) {
+            p -= 1.5 / d1;
+            return n1 * p * p + 0.75;
+          }
+          if (p < 2.5 / d1) {
+            p -= 2.25 / d1;
+            return n1 * p * p + 0.9375;
+          }
+          p -= 2.625 / d1;
+          return n1 * p * p + 0.984375;
         };
 
         // calcula el objetivo durante un salto/amago (timeline determinista por t0)
@@ -431,6 +456,64 @@ export default function CoinGuide() {
             sec = { key: "", t0: 0, done: false, reversed: false };
           }
 
+          // ── entrada "caída + rebote": al pasar (bajando) a una sección con drop ──
+          if (enterPlayedKey && active.key !== enterPlayedKey) {
+            enterPlayedKey = ""; // salió de la sección → se rearma para la próxima visita
+            enterRunning = false;
+          }
+          if (
+            !reduce &&
+            active.drop &&
+            scrollDir > 0 &&
+            active.key !== prevActiveKey &&
+            !enterRunning &&
+            enterPlayedKey !== active.key &&
+            posInit
+          ) {
+            enterRunning = true;
+            enterT0 = now;
+            enterFrom = { x: curX, y: curY };
+            enterPlayedKey = active.key;
+          }
+          prevActiveKey = active.key;
+
+          if (enterRunning) {
+            const DUR = 1100;
+            const e = (now - enterT0) / DUR;
+            const aEl = document.querySelector(active.anchor ?? active.sel);
+            if (e >= 1 || active.key !== enterPlayedKey || !aEl || !active.at) {
+              enterRunning = false; // terminó → continúa el lerp normal (ya está en reposo)
+            } else {
+              const rc = active.at(aEl.getBoundingClientRect(), vw, vh);
+              const rex = rc.x - w / 2;
+              const rey = rc.y - w / 2;
+              const wy = Math.max(rey - 320, 8); // punto alto a la izquierda, antes de caer
+              const tA = 0.42; // 1er tiempo: planeo en arco hacia la izquierda-arriba
+              let px: number;
+              let py: number;
+              let sqX = 1;
+              let sqY = 1;
+              if (e < tA) {
+                const a = easeOutCubic(e / tA);
+                px = enterFrom.x + (rex - enterFrom.x) * a;
+                py = enterFrom.y + (wy - enterFrom.y) * a;
+              } else {
+                const b = (e - tA) / (1 - tA); // 2º tiempo: caída con rebote (gravedad)
+                const yb = easeOutBounce(b);
+                px = rex;
+                py = wy + (rey - wy) * yb;
+                const settle = 1 - b * b; // el aplastón se desvanece al final (sin "pop")
+                const impact = Math.max(0, 1 - Math.abs(yb - 1) / 0.1) * settle; // toque
+                sqY = 1 - 0.16 * impact;
+                sqX = 1 + 0.12 * impact;
+              }
+              curX = px;
+              curY = py;
+              host.style.transform = `translate(${Math.round(px)}px, ${Math.round(py)}px) scaleX(${sqX.toFixed(3)}) scaleY(${sqY.toFixed(3)})`;
+              return; // omite el lerp normal mientras dura la caída
+            }
+          }
+
           // objetivo
           let t: Vec | null = null;
           const running =
@@ -479,7 +562,7 @@ export default function CoinGuide() {
           const dt = Math.min((now - lastT) / 1000, 0.05);
           lastT = now;
           if (!visible) return;
-          coinGroup.rotation.y += dt * 1.05;
+          coinGroup.rotation.y += dt * (enterRunning ? 1.95 : 1.05); // gira más al caer
           updateGuidePos();
           renderer.render(scene, camera);
         }
