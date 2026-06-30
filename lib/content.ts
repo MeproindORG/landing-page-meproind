@@ -59,66 +59,71 @@ export interface Model {
   eyebrow: string;
   desc: string;
   size: string;
+  weight: string;
   energy: string;
-  recovery: string;
+  tech: string;
 }
 export const MODELS: Model[] = [
   {
     code: "XL-25",
-    capacity: "200 kg/h",
+    capacity: "Hasta 200 kg/h",
     img: "/img/landing/model-1.jpg",
     alt: "Mesa gravimétrica XL-25 — hasta 200 kg/h, ideal para operaciones artesanales",
     plano: "/planos/xl-25.pdf",
     waMsg:
       "Hola, deseo más información sobre la mesa gravimétrica XL-25 de 200 kg/h.",
     eyebrow: "Para empezar con todo",
-    desc: "La más compacta — ideal para operaciones que recién arrancan.",
+    desc: "Alta precisión en formato compacto.",
     size: "2,050 × 620 × 730 mm",
-    energy: "1.1 kW · 220V monofásico",
-    recovery: "Hasta 91%",
+    weight: "150 kg",
+    energy: "1.1 kW (220V monofásico)",
+    tech: "GoldTech Pro Slots® · 91% recuperación",
   },
   {
     code: "XL-50",
-    capacity: "1 tn/h",
+    capacity: "Hasta 1 t/h",
     img: "/img/landing/model-2.jpg",
-    alt: "Mesa gravimétrica XL-50 — hasta 1 tn/h, la más popular",
+    alt: "Mesa gravimétrica XL-50 — hasta 1 t/h, la más popular",
     plano: "/planos/xl-50.pdf",
     popular: true,
     waMsg:
-      "Hola, deseo más información sobre la mesa gravimétrica XL-50 de 1 tn/h.",
+      "Hola, deseo más información sobre la mesa gravimétrica XL-50 de 1 t/h.",
     eyebrow: "La más elegida",
-    desc: "El equilibrio perfecto entre capacidad y tamaño.",
-    size: "Por confirmar",
-    energy: "Por confirmar",
-    recovery: "Hasta 91%",
+    desc: "Equilibrio perfecto entre capacidad y tamaño.",
+    size: "3,000 × 1,100 × 750 mm",
+    weight: "400 kg",
+    energy: "2.2 kW (380V trifásico)",
+    tech: "GoldTech Pro Slots® · 91% recuperación",
   },
   {
     code: "XL-75",
-    capacity: "1.5 tn/h",
+    capacity: "Hasta 1.5 t/h",
     img: "/img/landing/model-3.jpg",
-    alt: "Mesa gravimétrica XL-75 — hasta 1.5 tn/h, plantas semi-industriales",
+    alt: "Mesa gravimétrica XL-75 — hasta 1.5 t/h, plantas semi-industriales",
     plano: "/planos/xl-75.pdf",
     waMsg:
-      "Hola, deseo más información sobre la mesa gravimétrica XL-75 de 1.5 tn/h.",
+      "Hola, deseo más información sobre la mesa gravimétrica XL-75 de 1.5 t/h.",
     eyebrow: "Salto a lo industrial",
-    desc: "Mayor rendimiento sin perder precisión — para plantas semi-industriales.",
-    size: "Por confirmar",
-    energy: "Por confirmar",
-    recovery: "Hasta 91%",
+    desc: "Mayor rendimiento para plantas semi-industriales.",
+    size: "3,930 × 1,520 × 750 mm",
+    weight: "500 kg",
+    energy: "2.2 kW (380V trifásico)",
+    tech: "GoldTech Pro Slots® · 91% recuperación",
   },
   {
     code: "XL-100",
-    capacity: "2.5 tn/h",
+    capacity: "Hasta 2.5 t/h",
     img: "/img/landing/model-4.jpg",
-    alt: "Mesa gravimétrica XL-100 — hasta 2.5 tn/h, producción a gran escala",
+    alt: "Mesa gravimétrica XL-100 — hasta 2.5 t/h, producción a gran escala",
     plano: "/planos/xl-100.pdf",
     waMsg:
-      "Hola, deseo más información sobre la mesa gravimétrica XL-100 de 2.5 tn/h.",
+      "Hola, deseo más información sobre la mesa gravimétrica XL-100 de 2.5 t/h.",
     eyebrow: "Máxima producción",
-    desc: "Nuestra mesa más potente — producción a gran escala.",
-    size: "Por confirmar",
-    energy: "Por confirmar",
-    recovery: "Hasta 91%",
+    desc: "Capacidad masiva a escala industrial.",
+    size: "5,630 × 1,850 × 770 mm",
+    weight: "1,000 kg",
+    energy: "2.2 kW (380V trifásico)",
+    tech: "GoldTech Pro Slots® · 91% recuperación",
   },
 ];
 

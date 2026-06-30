@@ -61,12 +61,16 @@ export default function Models() {
                   <b>{m.size}</b>
                 </li>
                 <li>
+                  <span>Peso</span>
+                  <b>{m.weight}</b>
+                </li>
+                <li>
                   <span>Energía</span>
                   <b>{m.energy}</b>
                 </li>
                 <li>
-                  <span>Recuperación</span>
-                  <b className="o">{m.recovery}</b>
+                  <span>Tecnología</span>
+                  <b>{m.tech}</b>
                 </li>
               </ul>
 
