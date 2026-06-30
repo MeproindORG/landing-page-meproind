@@ -300,8 +300,10 @@ export default function CoinGuide() {
           { key: "stats", sel: ".statband", jump: ".statband .stat" },
           // 4 PlanetGOLD — a la derecha de la frase
           { key: "planet", sel: ".trust", anchor: ".planet-stat", at: (r, vw) => ({ x: Math.min(r.right + 70, vw - 80), y: r.top + r.height * 0.42 }) },
-          // 5 carrusel — RUEDA hasta posarse encima de la barra naranja del caption
-          { key: "carousel", sel: ".carousel", anchor: ".carousel-cap-text", roll: true, at: (r) => ({ x: r.left + 40, y: r.top - 75 }) },
+          // 5 carrusel — RUEDA hasta posarse ENCIMA de la barra naranja (centrada en ella:
+          // la barra mide 54px alineada a la izq. del caption → centro en left+27; y la
+          // subo para que quede sobre la línea, sin taparla)
+          { key: "carousel", sel: ".carousel", anchor: ".carousel-cap-text", roll: true, at: (r) => ({ x: r.left + 27, y: r.top - 100 }) },
           // 6 ¿Por qué Meproind? — gira a la izquierda, parte baja, junto a "Mesa MEPROIND"
           { key: "why", sel: "#comparativa", anchor: ".vcard.win", at: (r) => ({ x: r.left - 18, y: r.top + r.height * 0.42 }) },
           // 7 método tradicional — al medio-izquierda de los 2 renglones del título
