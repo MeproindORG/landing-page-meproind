@@ -136,7 +136,7 @@ header.scrolled{background:rgba(21,18,14,.88);backdrop-filter:blur(12px);padding
 /* título a la izquierda, arriba de las barras (estilo display con caja naranja);
    los saltos de línea van forzados con <br> para respetar el diseño */
 .vfeat-head h2{font-family:var(--fdisp);font-stretch:108%;font-weight:800;font-size:clamp(1.85rem,3.3vw,2.85rem);line-height:1.12;letter-spacing:-.02em;color:var(--ink);margin:0}
-.vfeat-head .mark{background:var(--o);color:#fff;border-radius:8px;padding:.02em .2em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.vfeat-head .mark{display:inline-block;background:var(--o);color:#fff;border-radius:8px;padding:.04em .26em;text-transform:uppercase;letter-spacing:.005em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
 /* líneas de progreso (capítulos) navegables, a la izquierda */
 .vfeat-bars{display:flex;gap:9px;max-width:340px}
 .vfb{position:relative;flex:1;height:5px;padding:0;border:none;border-radius:3px;background:rgba(26,22,18,.12);cursor:pointer;overflow:hidden}

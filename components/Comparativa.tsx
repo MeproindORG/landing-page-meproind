@@ -115,9 +115,9 @@ export default function Comparativa() {
                 <br />
                 mejor manera de
                 <br />
-                <span className="mark">procesar oro</span> y
+                <span className="mark">procesar oro</span>
                 <br />
-                otros minerales
+                y otros minerales
               </h2>
             </div>
 
