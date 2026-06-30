@@ -310,8 +310,8 @@ export default function CoinGuide() {
           { key: "mercury", sel: ".mercury", anchor: ".mercury .shead h2", at: (r) => ({ x: r.left + 24, y: r.top + r.height / 2 }) },
           // 8 10% más / 1 kilo — lado derecho
           { key: "value", sel: ".valueband", at: (r, vw) => ({ x: vw - 92, y: r.top + r.height / 2 }) },
-          // 9 modelos XL — amaga click en "Más popular", luego gira a la izq. junto a XL-25
-          { key: "models", sel: ".models", anchor: ".msel-tabs", invite: ".msel-tab-badge", at: (r) => ({ x: r.left - 12, y: r.top + r.height / 2 }) },
+          // 9 modelos XL — gira a la izquierda, junto a las pestañas de modelos
+          { key: "models", sel: ".models", anchor: ".msel-tabs", at: (r) => ({ x: r.left - 12, y: r.top + r.height / 2 }) },
           // 10 Trabaja 100X — gira a la izquierda
           { key: "speed", sel: ".claim", at: (r) => ({ x: 96, y: r.top + r.height / 2 }) },
           // 11 simulador — amaga click en campos + cotizar, luego arriba-derecha (oro recuperado)

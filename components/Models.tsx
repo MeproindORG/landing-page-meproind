@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MessageCircle, Download, FileDown, Star } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import Reveal from "./Reveal";
 import { MODELS } from "@/lib/content";
 import { wa } from "@/lib/whatsapp";
@@ -36,12 +36,6 @@ export default function Models() {
                 className={i === active ? "msel-tab active" : "msel-tab"}
                 onClick={() => setActive(i)}
               >
-                {mm.popular && (
-                  <span className="msel-tab-badge">
-                    <Star />
-                    Más popular
-                  </span>
-                )}
                 <span className="msel-tab-code">{mm.code}</span>
               </button>
             ))}
@@ -54,7 +48,6 @@ export default function Models() {
             </div>
             <div className="msel-info">
               <span className="msel-eyebrow">{m.eyebrow}</span>
-              <h3 className="msel-title">Mesa {m.code}</h3>
               <p className="msel-desc">{m.desc}</p>
 
               <ul className="msel-specs">
@@ -81,15 +74,6 @@ export default function Models() {
                   <MessageCircle />
                   Cotizar aquí
                 </a>
-                <a
-                  className="btn btn-ghost-ink"
-                  href={m.plano}
-                  target="_blank"
-                  rel="noopener"
-                >
-                  <Download />
-                  Descargar plano
-                </a>
               </div>
             </div>
           </div>
@@ -97,18 +81,6 @@ export default function Models() {
           <p className="msel-foot">
             ¿No sabes cuál te conviene? Te asesoramos sin compromiso por WhatsApp.
           </p>
-        </Reveal>
-
-        <Reveal style={{ textAlign: "center", marginTop: 30 }}>
-          <a
-            className="btn btn-ghost-ink"
-            target="_blank"
-            rel="noopener"
-            href="/planos/xl-100.pdf"
-          >
-            <FileDown />
-            Descargar ficha técnica completa
-          </a>
         </Reveal>
       </div>
     </section>
