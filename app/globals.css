@@ -110,7 +110,9 @@ header.scrolled{background:rgba(21,18,14,.88);backdrop-filter:blur(12px);padding
 .carousel-slide{position:absolute;inset:0;opacity:0;transition:opacity 1.1s var(--ease)}
 .carousel-slide.active{opacity:1}
 .carousel-slide img{width:100%;height:100%;object-fit:cover;object-position:center;display:block;user-select:none;-webkit-user-drag:none}
-.carousel-cap{position:absolute;left:0;right:0;bottom:0;padding:clamp(30px,5vw,68px) clamp(24px,6vw,96px);background:linear-gradient(0deg,rgba(8,8,9,.88) 0%,rgba(8,8,9,.52) 46%,rgba(8,8,9,0) 100%)}
+/* el texto/barra del caption arrancan en el mismo margen (--gutter) que el resto de
+   la página; la moneda (anclada a la barra) sigue ese punto automáticamente */
+.carousel-cap{position:absolute;left:0;right:0;bottom:0;padding:clamp(30px,5vw,68px) var(--gutter);background:linear-gradient(0deg,rgba(8,8,9,.88) 0%,rgba(8,8,9,.52) 46%,rgba(8,8,9,0) 100%)}
 .carousel-cap-bar{display:block;width:54px;height:5px;margin-bottom:18px;border-radius:3px;background:var(--o);transform:scaleX(0);transform-origin:left center;transition:transform .6s var(--ease) .4s}
 .carousel-cap-text{max-width:780px;margin:0;color:#fff;font-family:var(--fdisp);font-stretch:110%;font-weight:800;font-size:clamp(1.45rem,3.3vw,2.6rem);line-height:1.13;letter-spacing:-.01em;opacity:0;transform:translateY(30px);transition:opacity .72s var(--ease) .55s,transform .72s var(--ease) .55s}
 .carousel-slide.active .carousel-cap-bar{transform:scaleX(1)}
