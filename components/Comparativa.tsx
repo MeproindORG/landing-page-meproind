@@ -5,37 +5,34 @@ import { Volume2, VolumeX } from "lucide-react";
 import Reveal from "./Reveal";
 
 /**
- * Sección "Por qué MEPROIND": video vertical (la presentación de la mesa) a la
- * derecha y las frases clave a la izquierda, que se resaltan SINCRONIZADAS con el
- * avance del video (cada frase corresponde a lo que se escucha en ese tramo).
+ * "Por qué MEPROIND": video vertical (la mesa en acción) a la derecha; a la
+ * izquierda, las frases clave que se muestran UNA A UNA, sincronizadas con el
+ * tramo del video, con líneas de progreso navegables (clic = salta a ese punto).
+ * Al terminar, el video hace loop.
  *
- * Baja conectividad: el video (~MB) se carga sólo cuando la sección entra en
- * pantalla (preload="none" + carga diferida), autoplay silenciado + loop, con
- * botón para activar el sonido y oír la narración.
+ * `start` = segundo del video donde empieza cada frase. ←★ AJUSTAR con los
+ * tiempos reales de la narración (ahora reparte en partes iguales como base).
  */
 const POINTS = [
-  {
-    t: "Maximiza tu recuperación",
-    d: "Hasta 91% de recuperación de oro y otros minerales, para partículas finas y gruesas.",
-  },
-  {
-    t: "Tecnología GoldTech Pro Slots®",
-    d: "Ranuras con geometría avanzada para una captura especializada en oro y otros metales.",
-  },
-  {
-    t: "Cero químicos",
-    d: "Sistema de separación únicamente con agua y electricidad — sin mercurio ni cianuro.",
-  },
-  {
-    t: "Reutiliza el agua",
-    d: "Consumo optimizado con una relación de 70% agua y 30% material.",
-  },
+  { start: 0, t: "Maximiza tu recuperación", d: "Hasta 91% de recuperación de oro y otros minerales, para partículas finas y gruesas." },
+  { start: 10.5, t: "Tecnología GoldTech Pro Slots®", d: "Ranuras con geometría avanzada para una captura especializada en oro y otros metales." },
+  { start: 21, t: "Cero químicos", d: "Sistema de separación únicamente con agua y electricidad — sin mercurio ni cianuro." },
+  { start: 31.5, t: "Reutiliza el agua", d: "Consumo optimizado con una relación de 70% agua y 30% material." },
 ];
+const SRC = "/video/meproind-vert.mp4";
 
 export default function Comparativa() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [active, setActive] = useState(0);
+  const [prog, setProg] = useState(0); // avance 0..1 dentro de la frase activa
   const [muted, setMuted] = useState(true);
+
+  const ensureSrc = (v: HTMLVideoElement) => {
+    if (!v.getAttribute("src")) {
+      v.setAttribute("src", SRC);
+      v.load();
+    }
+  };
 
   // Carga diferida + autoplay al entrar en pantalla; pausa al salir.
   useEffect(() => {
@@ -46,10 +43,7 @@ export default function Comparativa() {
         const e = entries[0];
         if (!e) return;
         if (e.intersectionRatio >= 0.3) {
-          if (!v.getAttribute("src")) {
-            v.setAttribute("src", "/video/meproind-vert.mp4");
-            v.load();
-          }
+          ensureSrc(v);
           const tryPlay = () => v.play().catch(() => {});
           if (v.readyState >= 2) tryPlay();
           else v.addEventListener("canplay", tryPlay, { once: true });
@@ -63,31 +57,46 @@ export default function Comparativa() {
     return () => io.disconnect();
   }, []);
 
-  // Resalta la frase que corresponde al tramo actual del video. Por ahora reparte
-  // las 4 frases en partes iguales de la duración (robusto sin timestamps exactos);
-  // si se quieren tiempos precisos, basta con definir un `start` por frase.
+  // Sincroniza la frase activa + el progreso con el tiempo del video.
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
     const onTime = () => {
-      if (!v.duration) return;
-      const i = Math.min(
-        POINTS.length - 1,
-        Math.floor((v.currentTime / v.duration) * POINTS.length),
-      );
+      const tt = v.currentTime;
+      let i = 0;
+      for (let k = 0; k < POINTS.length; k++) if (tt >= POINTS[k].start) i = k;
       setActive(i);
+      const end = i + 1 < POINTS.length ? POINTS[i + 1].start : v.duration || POINTS[i].start + 10;
+      const span = Math.max(0.1, end - POINTS[i].start);
+      setProg(Math.min(1, Math.max(0, (tt - POINTS[i].start) / span)));
     };
     v.addEventListener("timeupdate", onTime);
     return () => v.removeEventListener("timeupdate", onTime);
   }, []);
 
+  // Clic en una línea → salta a ese punto del video (navegación por capítulos).
+  const seekTo = (i: number) => {
+    const v = videoRef.current;
+    if (!v) return;
+    ensureSrc(v);
+    const go = () => {
+      v.currentTime = POINTS[i].start + 0.05;
+      v.play().catch(() => {});
+    };
+    if (v.readyState >= 1) go();
+    else v.addEventListener("loadedmetadata", go, { once: true });
+  };
+
   const toggleMute = () => {
     const v = videoRef.current;
     if (!v) return;
+    ensureSrc(v);
     v.muted = !v.muted;
     setMuted(v.muted);
     v.play().catch(() => {});
   };
+
+  const cur = POINTS[active];
 
   return (
     <section className="section" id="comparativa">
@@ -101,40 +110,42 @@ export default function Comparativa() {
         </Reveal>
 
         <Reveal className="vfeat">
-          {/* Frases sincronizadas con el video */}
-          <ul className="vfeat-points">
-            {POINTS.map((p, i) => (
-              <li
-                key={i}
-                className={i === active ? "vfeat-point on" : "vfeat-point"}
-                aria-current={i === active}
-              >
-                <span className="vfeat-num">{i + 1}</span>
-                <div className="vfeat-copy">
-                  <h3>{p.t}</h3>
-                  <p>{p.d}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
+          {/* Izquierda: líneas de progreso navegables + frase activa (una a una) */}
+          <div className="vfeat-rail">
+            <div className="vfeat-bars" role="tablist" aria-label="Capítulos del video">
+              {POINTS.map((p, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  role="tab"
+                  aria-selected={i === active}
+                  className={i === active ? "vfb on" : "vfb"}
+                  onClick={() => seekTo(i)}
+                  aria-label={`Ir a: ${p.t}`}
+                >
+                  <span
+                    className="vfb-fill"
+                    style={{ transform: `scaleX(${i < active ? 1 : i === active ? prog : 0})` }}
+                  />
+                </button>
+              ))}
+            </div>
 
-          {/* Video vertical de la mesa en acción */}
+            <div className="vfeat-active" key={active}>
+              <span className="vfeat-step">
+                {String(active + 1).padStart(2, "0")}
+                <em> / {String(POINTS.length).padStart(2, "0")}</em>
+              </span>
+              <h3>{cur.t}</h3>
+              <p>{cur.d}</p>
+            </div>
+          </div>
+
+          {/* Derecha: video vertical */}
           <div className="vfeat-stage">
             <div className="vfeat-frame">
-              <div className="vfeat-dots" aria-hidden="true">
-                {POINTS.map((_, i) => (
-                  <span key={i} className={i === active ? "on" : ""} />
-                ))}
-              </div>
               {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-              <video
-                ref={videoRef}
-                muted
-                loop
-                playsInline
-                preload="none"
-                poster="/img/landing/m3.jpg"
-              />
+              <video ref={videoRef} muted loop playsInline preload="none" poster="/img/landing/m3.jpg" />
               <button
                 type="button"
                 className="vfeat-mute"
