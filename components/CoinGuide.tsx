@@ -304,8 +304,8 @@ export default function CoinGuide() {
           // (se ancla a la barra real, no al texto → consistente aunque el caption tenga 1
           // o 2 líneas). Barra de 54px alineada a la izq. → centro en left+27; y justo arriba.
           { key: "carousel", sel: ".carousel", anchor: ".carousel-slide.active .carousel-cap-bar", roll: true, at: (r) => ({ x: r.left + 27, y: r.top - 62 }) },
-          // 6 ¿Por qué Meproind? — gira a la izquierda, parte baja, junto a "Mesa MEPROIND"
-          { key: "why", sel: "#comparativa", anchor: ".vcard.win", at: (r) => ({ x: r.left - 18, y: r.top + r.height * 0.42 }) },
+          // 6 ¿Por qué Meproind? — gira en el margen izquierdo, junto a las frases del video
+          { key: "why", sel: "#comparativa", anchor: ".vfeat-points", at: (r) => ({ x: Math.max(r.left - 70, 24), y: r.top + r.height * 0.5 }) },
           // 7 método tradicional — al medio-izquierda de los 2 renglones del título
           { key: "mercury", sel: ".mercury", anchor: ".mercury .shead h2", at: (r) => ({ x: r.left + 24, y: r.top + r.height / 2 }) },
           // 8 10% más / 1 kilo — lado derecho
