@@ -14,12 +14,15 @@ import { wa } from "@/lib/whatsapp";
  * `start` = segundo del video donde empieza cada frase. ←★ AJUSTAR con los
  * tiempos reales de la narración (ahora reparte en partes iguales como base).
  */
+// `start` = segundo del video donde empieza cada frase. Tiempos del cliente:
+// GoldTech aparece 3-4s · mezcla 70/30 ~21s · reutilizar agua ~28s.
+// (1 y 5 estimados: arranque y cierre.)
 const POINTS = [
   { start: 0, t: "Maximiza tu recuperación", d: "Logra hasta un 91% de eficiencia capturando tanto oro fino como grueso." },
-  { start: 8.4, t: "Tecnología GoldTech Pro Slots®", d: "Ranuras con geometría avanzada diseñadas exclusivamente para una captura especializada de oro y otros metales." },
-  { start: 16.9, t: "Consumo optimizado", d: "Mezcla eficiente de 70% agua y 30% mineral para garantizar el máximo rendimiento." },
-  { start: 25.3, t: "Sistema de circuito cerrado", d: "Permite reutilizar el agua en cada jornada, reduciendo costos operativos drásticamente." },
-  { start: 33.8, t: "Impacto ambiental", d: "Proceso 100% limpio que opera únicamente con agua y electricidad, libre de químicos." },
+  { start: 3.5, t: "Tecnología GoldTech Pro Slots®", d: "Ranuras con geometría avanzada diseñadas exclusivamente para una captura especializada de oro y otros metales." },
+  { start: 21, t: "Consumo optimizado", d: "Mezcla eficiente de 70% agua y 30% mineral para garantizar el máximo rendimiento." },
+  { start: 28, t: "Sistema de circuito cerrado", d: "Permite reutilizar el agua en cada jornada, reduciendo costos operativos drásticamente." },
+  { start: 35, t: "Impacto ambiental", d: "Proceso 100% limpio que opera únicamente con agua y electricidad, libre de químicos." },
 ];
 const SRC = "/video/meproind-vert.mp4";
 
