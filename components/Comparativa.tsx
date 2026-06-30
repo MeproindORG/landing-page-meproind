@@ -111,13 +111,12 @@ export default function Comparativa() {
           <div className="vfeat-rail">
             <div className="vfeat-head">
               <h2>
-                Descubre la
-                <br />
-                mejor manera de
-                <br />
-                <span className="mark">procesar oro</span>
-                <br />
-                y otros minerales
+                <span className="ln">Descubre la</span>
+                <span className="ln fit">mejor manera de</span>
+                <span className="ln">
+                  <span className="mark">procesar oro</span>
+                </span>
+                <span className="ln fit">y otros minerales</span>
               </h2>
             </div>
 
@@ -151,12 +150,12 @@ export default function Comparativa() {
 
             <a
               className="btn btn-o vfeat-cta"
-              href={wa("Hola, quiero agendar mi prueba gratis de las mesas gravimétricas Meproind.")}
+              href={wa("Hola, quiero la prueba gratis de las mesas gravimétricas Meproind.")}
               target="_blank"
               rel="noopener"
             >
               <MessageCircle />
-              Agenda tu Prueba Gratis
+              Prueba gratis
             </a>
           </div>
 
