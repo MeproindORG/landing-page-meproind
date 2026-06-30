@@ -15,10 +15,11 @@ import { wa } from "@/lib/whatsapp";
  * tiempos reales de la narración (ahora reparte en partes iguales como base).
  */
 const POINTS = [
-  { start: 0, t: "Maximiza tu recuperación", d: "Hasta 91% de recuperación de oro y otros minerales, para partículas finas y gruesas." },
-  { start: 10.5, t: "Tecnología GoldTech Pro Slots®", d: "Ranuras con geometría avanzada para una captura especializada en oro y otros metales." },
-  { start: 21, t: "Cero químicos", d: "Sistema de separación únicamente con agua y electricidad — sin mercurio ni cianuro." },
-  { start: 31.5, t: "Reutiliza el agua", d: "Consumo optimizado con una relación de 70% agua y 30% material." },
+  { start: 0, t: "Maximiza tu recuperación", d: "Logra hasta un 91% de eficiencia capturando tanto oro fino como grueso." },
+  { start: 8.4, t: "Tecnología GoldTech Pro Slots®", d: "Ranuras con geometría avanzada diseñadas exclusivamente para una captura especializada de oro y otros metales." },
+  { start: 16.9, t: "Consumo optimizado", d: "Mezcla eficiente de 70% agua y 30% mineral para garantizar el máximo rendimiento." },
+  { start: 25.3, t: "Sistema de circuito cerrado", d: "Permite reutilizar el agua en cada jornada, reduciendo costos operativos drásticamente." },
+  { start: 33.8, t: "Impacto ambiental", d: "Proceso 100% limpio que opera únicamente con agua y electricidad, libre de químicos." },
 ];
 const SRC = "/video/meproind-vert.mp4";
 
@@ -143,12 +144,12 @@ export default function Comparativa() {
 
             <a
               className="btn btn-o vfeat-cta"
-              href={wa("Hola, quiero la prueba gratis de las mesas gravimétricas Meproind.")}
+              href={wa("Hola, quiero agendar mi prueba gratis de las mesas gravimétricas Meproind.")}
               target="_blank"
               rel="noopener"
             >
               <MessageCircle />
-              Prueba gratis
+              Agenda tu Prueba Gratis
             </a>
           </div>
 
