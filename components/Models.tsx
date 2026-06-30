@@ -44,7 +44,12 @@ export default function Models() {
           {/* Panel del modelo activo */}
           <div className="msel-panel">
             <div className="msel-photo">
-              <img src={m.img} alt={m.alt} />
+              {/* fondo desenfocado para rellenar sin barras vacías */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="msel-photo-bg" src={m.img} alt="" aria-hidden="true" />
+              {/* imagen completa, sin recortar */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="msel-photo-fg" src={m.img} alt={m.alt} />
             </div>
             <div className="msel-info">
               <span className="msel-eyebrow">{m.eyebrow}</span>
