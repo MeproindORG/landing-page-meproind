@@ -133,9 +133,9 @@ header.scrolled{background:rgba(21,18,14,.88);backdrop-filter:blur(12px);padding
 /* ── "Por qué MEPROIND": video vertical + frase a la vez con progreso izq. ── */
 .vfeat{display:grid;grid-template-columns:1fr minmax(290px,360px);gap:clamp(30px,4.5vw,68px);align-items:center;margin-top:clamp(30px,4.5vw,54px)}
 .vfeat-rail{display:flex;flex-direction:column;gap:clamp(18px,2.6vw,28px)}
-/* título a la izquierda, arriba de las barras (estilo display con caja naranja) */
-.vfeat-head .eyebrow{margin-bottom:10px}
-.vfeat-head h2{font-family:var(--fdisp);font-stretch:108%;font-weight:800;font-size:clamp(1.85rem,3.3vw,2.85rem);line-height:1.07;letter-spacing:-.02em;color:var(--ink);margin:0;max-width:13ch}
+/* título a la izquierda, arriba de las barras (estilo display con caja naranja);
+   los saltos de línea van forzados con <br> para respetar el diseño */
+.vfeat-head h2{font-family:var(--fdisp);font-stretch:108%;font-weight:800;font-size:clamp(1.85rem,3.3vw,2.85rem);line-height:1.12;letter-spacing:-.02em;color:var(--ink);margin:0}
 .vfeat-head .mark{background:var(--o);color:#fff;border-radius:8px;padding:.02em .2em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
 /* líneas de progreso (capítulos) navegables, a la izquierda */
 .vfeat-bars{display:flex;gap:9px;max-width:340px}

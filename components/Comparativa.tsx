@@ -110,10 +110,14 @@ export default function Comparativa() {
           {/* Izquierda: título + líneas de progreso navegables + frase activa (una a una) */}
           <div className="vfeat-rail">
             <div className="vfeat-head">
-              <span className="eyebrow">Por qué MEPROIND</span>
               <h2>
-                Descubre la mejor manera de{" "}
-                <span className="mark">procesar oro</span> y otros minerales
+                Descubre la
+                <br />
+                mejor manera de
+                <br />
+                <span className="mark">procesar oro</span> y
+                <br />
+                otros minerales
               </h2>
             </div>
 
