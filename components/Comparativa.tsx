@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Volume2, VolumeX } from "lucide-react";
+import { MessageCircle, Volume2, VolumeX } from "lucide-react";
 import Reveal from "./Reveal";
+import { wa } from "@/lib/whatsapp";
 
 /**
  * "Por qué MEPROIND": video vertical (la mesa en acción) a la derecha; a la
@@ -101,17 +102,17 @@ export default function Comparativa() {
   return (
     <section className="section" id="comparativa">
       <div className="wrap">
-        <Reveal className="shead center">
-          <span className="eyebrow">Por qué MEPROIND</span>
-          <h2>
-            Descubre la mejor manera de procesar{" "}
-            <span className="o">oro y otros minerales</span>
-          </h2>
-        </Reveal>
-
         <Reveal className="vfeat">
-          {/* Izquierda: líneas de progreso navegables + frase activa (una a una) */}
+          {/* Izquierda: título + líneas de progreso navegables + frase activa (una a una) */}
           <div className="vfeat-rail">
+            <div className="vfeat-head">
+              <span className="eyebrow">Por qué MEPROIND</span>
+              <h2>
+                Descubre la mejor manera de{" "}
+                <span className="mark">procesar oro</span> y otros minerales
+              </h2>
+            </div>
+
             <div className="vfeat-bars" role="tablist" aria-label="Capítulos del video">
               {POINTS.map((p, i) => (
                 <button
@@ -139,6 +140,16 @@ export default function Comparativa() {
               <h3>{cur.t}</h3>
               <p>{cur.d}</p>
             </div>
+
+            <a
+              className="btn btn-o vfeat-cta"
+              href={wa("Hola, quiero la prueba gratis de las mesas gravimétricas Meproind.")}
+              target="_blank"
+              rel="noopener"
+            >
+              <MessageCircle />
+              Prueba gratis
+            </a>
           </div>
 
           {/* Derecha: video vertical */}
