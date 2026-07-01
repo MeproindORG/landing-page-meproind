@@ -87,7 +87,8 @@ header.scrolled{background:rgba(21,18,14,.88);backdrop-filter:blur(12px);padding
 .statband.in .stat:nth-child(2){transition-delay:.13s}
 .statband.in .stat:nth-child(3){transition-delay:.26s}
 .stat .n{font-family:var(--fdisp);font-stretch:125%;font-weight:900;font-size:clamp(2rem,3.4vw,3rem);line-height:1;letter-spacing:-.02em}
-.stat .n.o{color:var(--o)}
+.stat .n{color:#fff}
+.stat .n .pfx{color:var(--o)}
 .stat .l{font-size:.78rem;color:#fff;margin-top:8px;letter-spacing:.04em}
 /* Video después del hero */
 .herovid{background:var(--dark2);padding:54px 0}

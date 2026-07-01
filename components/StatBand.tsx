@@ -61,7 +61,7 @@ export default function StatBand() {
         {STATS.map((s, i) => (
           <div className="stat" key={i}>
             <div className={s.accent ? "n o" : "n"}>
-              {s.prefix}
+              {s.prefix && <span className="pfx">{s.prefix}</span>}
               {s.count !== null ? <span data-count={s.count}>0</span> : s.text}
               {s.suffix}
             </div>
