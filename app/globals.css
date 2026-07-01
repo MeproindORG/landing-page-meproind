@@ -167,7 +167,7 @@ header.scrolled{background:rgba(21,18,14,.88);backdrop-filter:blur(12px);padding
 .vfeat-mute{position:absolute;bottom:12px;right:12px;z-index:2;width:42px;height:42px;border-radius:50%;border:none;background:rgba(0,0,0,.5);color:#fff;display:grid;place-items:center;cursor:pointer;transition:background .2s var(--ease)}
 .vfeat-mute:hover{background:rgba(0,0,0,.74)}
 .vfeat-mute svg{width:20px;height:20px}
-@media(max-width:860px){.vfeat{grid-template-columns:1fr;gap:28px}.vfeat-stage{order:-1}.vfeat-frame{max-width:300px}.vfeat-active{min-height:0}}
+@media(max-width:860px){.vfeat{grid-template-columns:1fr;gap:28px}.vfeat-rail{display:contents}.vfeat-head{order:1}.vfeat-stage{order:2}.vfeat-bars{order:3}.vfeat-active{order:4;min-height:0}.vfeat-cta{order:5}.vfeat-frame{max-width:300px}}
 .claim{text-align:center;padding:clamp(40px,6vw,64px) 0}
 .claim .pre{font-family:var(--fhead);font-weight:700;font-size:1.1rem;color:var(--on-accent);letter-spacing:.02em}
 .claim .big{font-family:var(--fdisp);font-stretch:125%;font-weight:900;color:var(--on-accent);font-size:clamp(3.5rem,10vw,7rem);line-height:.92;letter-spacing:-.03em;margin:2px 0}
