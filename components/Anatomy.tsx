@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Hand } from "lucide-react";
 import { ANATOMY_PARTS } from "@/lib/content";
 import Reveal from "./Reveal";
@@ -9,27 +9,6 @@ const BASE = "/img/landing/anat-base.jpg";
 
 export default function Anatomy() {
   const [active, setActive] = useState(ANATOMY_PARTS[0]);
-  const stageRef = useRef<HTMLDivElement>(null);
-
-  // Micro-interacción 3D: la mesa se inclina siguiendo el cursor (solo desktop).
-  const tilt = (e: React.MouseEvent<HTMLDivElement>) => {
-    const el = stageRef.current;
-    if (
-      !el ||
-      window.matchMedia("(hover: none)").matches ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    )
-      return;
-    const r = el.getBoundingClientRect();
-    const px = (e.clientX - r.left) / r.width - 0.5;
-    const py = (e.clientY - r.top) / r.height - 0.5;
-    el.style.transform = `perspective(1100px) rotateX(${(-py * 8).toFixed(
-      2,
-    )}deg) rotateY(${(px * 12).toFixed(2)}deg)`;
-  };
-  const resetTilt = () => {
-    if (stageRef.current) stageRef.current.style.transform = "";
-  };
 
   return (
     <section className="section anatomy">
@@ -42,12 +21,7 @@ export default function Anatomy() {
           </p>
         </Reveal>
         <Reveal className="anat-wrap">
-          <div
-            className="anat-stage"
-            ref={stageRef}
-            onMouseMove={tilt}
-            onMouseLeave={resetTilt}
-          >
+          <div className="anat-stage">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={BASE}
