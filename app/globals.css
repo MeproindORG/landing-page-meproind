@@ -80,6 +80,9 @@ header.scrolled{background:rgba(21,18,14,.88);backdrop-filter:blur(12px);padding
 .hero-cta{display:flex;gap:14px;flex-wrap:wrap}
 .hero-trust{margin-top:26px;display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.62);font-size:.84rem}
 .hero-trust svg{width:16px;height:16px;color:var(--o)}
+/* fondo rotativo del hero (solo celular): 3 capas con crossfade CSS */
+.hero-mshots{display:none}
+@keyframes heroShots{0%{opacity:0}4%{opacity:1}33%{opacity:1}37%{opacity:0}100%{opacity:0}}
 .statband{background:var(--dark2);border-top:1px solid var(--dark-line);color:#fff}
 .statband .wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding-top:38px;padding-bottom:38px}
 .stat{text-align:center;opacity:0;transform:translateY(22px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
@@ -386,6 +389,11 @@ footer ul a{font-size:.9rem;transition:color .2s} footer ul a:hover{color:var(--
   .sim-results{grid-template-columns:repeat(2,1fr)}
   .hero-cta .btn{flex:1;justify-content:center}
   .hero{padding:118px 0 60px}
+  .hero-mshots{display:block;position:absolute;inset:0;z-index:0}
+  .hero-mshot{position:absolute;inset:0;background:center/cover no-repeat;opacity:0;animation:heroShots 30s infinite}
+  .hero-mshot:nth-child(2){animation-delay:10s}
+  .hero-mshot:nth-child(3){animation-delay:20s}
+  .hero::before{background:linear-gradient(180deg,rgba(12,13,15,.82) 0%,rgba(12,13,15,.56) 32%,rgba(12,13,15,.52) 60%,rgba(12,13,15,.72) 100%)}
   header{padding:12px 0}
   .section{padding:50px 0}
   .shead{margin-bottom:32px}
@@ -411,4 +419,4 @@ footer ul a{font-size:.9rem;transition:color .2s} footer ul a:hover{color:var(--
   .statband .wrap{grid-template-columns:repeat(3,1fr);gap:14px}
   .v3d-legend{flex-wrap:wrap;max-width:160px}
 }
-@media(prefers-reduced-motion:reduce){.reveal,.stat{opacity:1;transform:none;transition:none}.hot,.fab-wa::before{animation:none}.carousel-slide,.carousel-cap-bar,.carousel-cap-text{transition:none}.mobile-menu.open{animation:none}html{scroll-behavior:auto}}
+@media(prefers-reduced-motion:reduce){.reveal,.stat{opacity:1;transform:none;transition:none}.hot,.fab-wa::before{animation:none}.hero-mshot{animation:none;opacity:0}.hero-mshot:first-child{opacity:1}.carousel-slide,.carousel-cap-bar,.carousel-cap-text{transition:none}.mobile-menu.open{animation:none}html{scroll-behavior:auto}}

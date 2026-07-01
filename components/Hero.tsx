@@ -4,6 +4,12 @@ import { wa } from "@/lib/whatsapp";
 export default function Hero() {
   return (
     <section className="hero">
+      {/* Fondo rotativo SOLO en celular (3 fotos, crossfade CSS). Oculto en desktop/tablet. */}
+      <div className="hero-mshots" aria-hidden="true">
+        <div className="hero-mshot" style={{ backgroundImage: "url('/img/landing/hero-m1.jpg')" }} />
+        <div className="hero-mshot" style={{ backgroundImage: "url('/img/landing/hero-m2.jpg')" }} />
+        <div className="hero-mshot" style={{ backgroundImage: "url('/img/landing/hero-m3.jpg')" }} />
+      </div>
       <div className="wrap">
         <div className="reveal in" style={{ maxWidth: 680 }}>
           <h1 style={{ marginTop: 0 }}>
