@@ -239,7 +239,7 @@ header.scrolled{background:rgba(21,18,14,.88);backdrop-filter:blur(12px);padding
 .anatomy{background:var(--dark);color:#fff}
 .anatomy .shead h2{color:#fff}
 .anat-wrap{display:grid;grid-template-columns:1.35fr .65fr;gap:28px;align-items:stretch}
-.anat-stage{position:relative;border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--dark-line);aspect-ratio:1600/1066;align-self:start}
+.anat-stage{position:relative;border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--dark-line);aspect-ratio:1600/1066;align-self:start;transition:transform .3s var(--ease);will-change:transform}
 .anat-stage>img{width:100%;height:100%;object-fit:cover;display:block}
 .hot{position:absolute;transform:translate(-50%,-50%);width:32px;height:32px;border-radius:50%;border:2px solid #fff;background:rgba(252,143,51,.92);cursor:pointer;display:flex;align-items:center;justify-content:center;animation:hp 2.4s infinite;padding:0;z-index:2}
 .hot::after{content:"";width:8px;height:8px;border-radius:50%;background:#fff}
