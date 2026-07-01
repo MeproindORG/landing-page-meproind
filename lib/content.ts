@@ -175,43 +175,71 @@ export interface AnatomyPart {
   key: string;
   t: string;
   d: string;
-  img: string;
+  /** close-up real del componente; si falta, se hace zoom sobre la base */
+  img?: string;
   /** posición del hotspot en % sobre la imagen */
   x: number;
   y: number;
 }
 export const ANATOMY_PARTS: AnatomyPart[] = [
   {
-    key: "ranuras",
-    t: "Mesa ranurada · GoldTech Pro Slots®",
-    d: "Geometría de ranuras que captura hasta la partícula más fina de oro — hasta 91% de recuperación.",
-    img: "/img/landing/m7.jpg",
-    x: 52,
-    y: 41,
-  },
-  {
-    key: "alimentador",
-    t: "Alimentador y canal ABS",
-    d: "El alimentador reparte la pulpa de forma pareja sobre la mesa; el canal de irrigación de plástico ABS resiste años sin pudrirse.",
-    img: "/img/landing/m5.jpg",
-    x: 25,
-    y: 39,
-  },
-  {
-    key: "motor",
-    t: "Motor 2.2 kW + variador",
-    d: "Velocidad ajustable para adaptarse a cualquier tipo de material, maximizando la productividad y el control.",
-    img: "/img/landing/m6.jpg",
-    x: 44,
-    y: 67,
+    key: "cama",
+    t: "Cama",
+    d: "Tablero de piedra carburada y fibra de vidrio con rifles GoldTech Pro Slots® que atrapan el oro fino.",
+    x: 51,
+    y: 43,
   },
   {
     key: "estructura",
-    t: "Estructura de acero reforzada",
-    d: "Soporte metálico reforzado y tablero de piedra carburada con fibra de vidrio. Resiste el sol y la intemperie.",
-    img: "/img/landing/m3.jpg",
-    x: 61,
-    y: 77,
+    t: "Estructura metálica",
+    d: "Soporte con doble refuerzo, altamente resistente al sol, la intemperie y la vibración pesada.",
+    x: 44,
+    y: 80,
+  },
+  {
+    key: "motor",
+    t: "Motor eléctrico",
+    d: "Sistema de alta eficiencia industrial en versiones de 220V monofásico o 380V trifásico.",
+    x: 88,
+    y: 64,
+  },
+  {
+    key: "caja",
+    t: "Caja de lubricación",
+    d: "Cabezal de transmisión que protege los componentes internos contra el desgaste por vibración constante.",
+    img: "/img/landing/anat-caja.jpg",
+    x: 81,
+    y: 46,
+  },
+  {
+    key: "soportes",
+    t: "Soportes de inclinación",
+    d: "Mecanismo nivelador de precisión para ajustar los grados exactos según tu mineral.",
+    x: 17,
+    y: 60,
+  },
+  {
+    key: "canaletas",
+    t: "Canaletas de mineral y agua",
+    d: "Canal alimentador diseñado para recibir la materia prima y el agua del proceso.",
+    img: "/img/landing/anat-canaletas.jpg",
+    x: 45,
+    y: 36,
+  },
+  {
+    key: "tuberias",
+    t: "Tuberías de agua",
+    d: "Conducto de distribución encargado de dosificar el caudal transversal sobre la mesa.",
+    x: 56,
+    y: 25,
+  },
+  {
+    key: "polea",
+    t: "Polea",
+    d: "Sistema de transmisión por fajas que regula perfectamente la velocidad de vibración horaria.",
+    img: "/img/landing/anat-polea.jpg",
+    x: 92,
+    y: 51,
   },
 ];
 
