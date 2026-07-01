@@ -56,7 +56,6 @@ export interface Model {
   plano: string;
   popular?: boolean;
   waMsg: string;
-  eyebrow: string;
   desc: string;
   size: string;
   weight: string;
@@ -72,7 +71,6 @@ export const MODELS: Model[] = [
     plano: "/planos/xl-25.pdf",
     waMsg:
       "Hola, deseo más información sobre la mesa gravimétrica XL-25 de 200 kg/h.",
-    eyebrow: "Para empezar con todo",
     desc: "Alta precisión en formato compacto.",
     size: "2,050 × 620 × 730 mm",
     weight: "150 kg",
@@ -88,7 +86,6 @@ export const MODELS: Model[] = [
     popular: true,
     waMsg:
       "Hola, deseo más información sobre la mesa gravimétrica XL-50 de 1 t/h.",
-    eyebrow: "La más elegida",
     desc: "Equilibrio perfecto entre capacidad y tamaño.",
     size: "3,000 × 1,100 × 750 mm",
     weight: "400 kg",
@@ -103,7 +100,6 @@ export const MODELS: Model[] = [
     plano: "/planos/xl-75.pdf",
     waMsg:
       "Hola, deseo más información sobre la mesa gravimétrica XL-75 de 1.5 t/h.",
-    eyebrow: "Salto a lo industrial",
     desc: "Mayor rendimiento para plantas semi-industriales.",
     size: "3,930 × 1,520 × 750 mm",
     weight: "500 kg",
@@ -118,7 +114,6 @@ export const MODELS: Model[] = [
     plano: "/planos/xl-100.pdf",
     waMsg:
       "Hola, deseo más información sobre la mesa gravimétrica XL-100 de 2.5 t/h.",
-    eyebrow: "Máxima producción",
     desc: "Capacidad masiva a escala industrial.",
     size: "5,630 × 1,850 × 770 mm",
     weight: "1,000 kg",

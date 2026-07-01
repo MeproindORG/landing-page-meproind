@@ -48,7 +48,7 @@ export default function Models() {
               <img src={m.img} alt={m.alt} />
             </div>
             <div className="msel-info">
-              <span className="msel-eyebrow">{m.eyebrow}</span>
+              <span className="msel-eyebrow">Mesa {m.code}</span>
               <p className="msel-desc">{m.desc}</p>
 
               <ul className="msel-specs">
